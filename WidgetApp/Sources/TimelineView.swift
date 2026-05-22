@@ -13,7 +13,6 @@ struct TimelineView: View {
             let byDay = groupByDay(data.entries)
 
             VStack(spacing: 0) {
-                // 条目计数（调试用，确定后删掉）
                 Text("\(data.entries.count) 条记录")
                     .font(.system(size: 9, weight: .light))
                     .foregroundColor(.white.opacity(0.5))
@@ -88,13 +87,18 @@ struct DayColumn: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            dayHeader.frame(height: 22)
-            ZStack(alignment: .topLeading) {
-                gridLines
-                ForEach(entries) { entry in
-                    TimeBlock(entry: entry, hourStart: hourStart, hourHeight: hourHeight)
+        GeometryReader { geo in
+            let w = geo.size.width
+            VStack(spacing: 0) {
+                dayHeader.frame(width: w, height: 22)
+                ZStack(alignment: .topLeading) {
+                    gridLines
+                    ForEach(entries) { entry in
+                        TimeBlock(entry: entry, colW: w, hourStart: hourStart,
+                                  hourHeight: hourHeight)
+                    }
                 }
+                .frame(width: w)
             }
         }
     }
@@ -102,14 +106,15 @@ struct DayColumn: View {
     private var dayHeader: some View {
         let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
         guard let d = fmt.date(from: date) else { return AnyView(Text(date)) }
-        let df = DateFormatter(); df.dateFormat = "E"
-        let dayName = df.string(from: d)
+        let enLocale = Locale(identifier: "en_US")
+        let dayFmt = DateFormatter(); dayFmt.locale = enLocale; dayFmt.dateFormat = "EEE"
+        let dayName = dayFmt.string(from: d)
         let dayNum = Calendar.current.component(.day, from: d)
 
         return AnyView(
             VStack(spacing: 1) {
                 Text(dayName)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(.white.opacity(isToday ? 1.0 : 0.7))
                 Text(String(format: "%02d", dayNum))
                     .font(.system(size: 14, weight: isToday ? .bold : .regular, design: .rounded))
@@ -136,34 +141,34 @@ struct DayColumn: View {
 
 struct TimeBlock: View {
     let entry: TimeEntry
+    let colW: CGFloat
     let hourStart: Int
     let hourHeight: CGFloat
 
     var body: some View {
-        GeometryReader { geo in
-            let (y, h) = layout(for: entry)
-            let blockH = max(h - 1, 8)
+        let (y, h) = layout(for: entry)
+        let w = max(colW - 1, 0)
+        let blockH = max(h - 1, 8)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text(entry.name)
-                    .font(.system(size: 9, weight: .semibold))
+        VStack(alignment: .leading, spacing: 0) {
+            Text(entry.name)
+                .font(.system(size: 9, weight: .semibold))
+                .lineLimit(1)
+            if blockH > 14 {
+                Text("\(entry.category) · \(entry.project)")
+                    .font(.system(size: 8))
                     .lineLimit(1)
-                if blockH > 16 {
-                    Text("\(entry.category) · \(entry.project)")
-                        .font(.system(size: 8))
-                        .lineLimit(1)
-                        .foregroundColor(.white.opacity(0.8))
-                }
+                    .foregroundColor(.white.opacity(0.8))
             }
-            .padding(.horizontal, 3)
-            .padding(.vertical, 1)
-            .frame(width: max(geo.size.width - 1, 0), height: blockH, alignment: .topLeading)
-            .background(blockColor(entry.category))
-            .cornerRadius(4)
-            .overlay(RoundedRectangle(cornerRadius: 4)
-                .stroke(blockColor(entry.category).opacity(0.5), lineWidth: 0.5))
-            .offset(y: y)
         }
+        .padding(.horizontal, 3)
+        .padding(.vertical, 1)
+        .frame(width: w, height: blockH, alignment: .topLeading)
+        .background(blockColor(entry.category))
+        .cornerRadius(4)
+        .overlay(RoundedRectangle(cornerRadius: 4)
+            .stroke(blockColor(entry.category).opacity(0.5), lineWidth: 0.5))
+        .offset(y: y)
     }
 
     private func layout(for e: TimeEntry) -> (CGFloat, CGFloat) {
