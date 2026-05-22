@@ -20,18 +20,11 @@ struct TimelineView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let data = data {
-                // 显示最近 3 天
-                let today = Date()
-                let days = [-1, 0, 1].map {
-                    dayFmt.string(from: Calendar.current.date(byAdding: .day, value: $0, to: today)!)
-                }
-                let allEntries = data.entries
-                    .filter { $0.durationMin >= 3 }
-                    .map(cleanEntry)
-                let byDay = groupByDay(allEntries)
-                let merged = byDay.mapValues { mergeAdjacent($0) }
+                // 本周 7 天，昨天留空，只显示今天
+                let days = buildDays(from: data.weekStart)
+                let byDay = buildTodayDict(data.entries)
 
-                HStack(alignment: .top, spacing: 0) {
+                HStack(alignment: .top, spacing: 4) {
                     VStack(alignment: .trailing, spacing: 0) {
                         Color.clear.frame(height: 26)
                         ForEach(hourStart..<hourEnd, id: \.self) { h in
@@ -46,7 +39,7 @@ struct TimelineView: View {
                     .padding(.trailing, 4)
 
                     ForEach(days, id: \.self) { day in
-                        DayColumn(date: day, entries: merged[day] ?? [])
+                        DayColumn(date: day, entries: byDay[day] ?? [])
                             .frame(width: colW)
                     }
                 }
@@ -61,7 +54,15 @@ struct TimelineView: View {
         .background(Color.black.opacity(0.22))
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .padding(6)
-        .frame(width: 3 * colW + 60, height: CGFloat(totalHours) * hourHeight + 60)
+        .frame(width: 7 * colW + 80, height: CGFloat(totalHours) * hourHeight + 60)
+    }
+
+    private func buildTodayDict(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {
+        let todayKey = dayFmt.string(from: Date())
+        let cleaned = entries.filter { $0.durationMin >= 3 }.map(cleanEntry)
+        let allByDay = groupByDay(cleaned)
+        guard let today = allByDay[todayKey] else { return [:] }
+        return [todayKey: mergeAdjacent(today)]
     }
 
     private func cleanEntry(_ e: TimeEntry) -> TimeEntry {
@@ -240,10 +241,10 @@ struct TimeBlockView: View {
 
 func morandiColor(_ cat: String) -> Color {
     switch cat {
-    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.42)
-    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.42)
-    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.42)
-    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.42)
+    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.52)
+    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.52)
+    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.52)
+    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.52)
     case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.40)
     case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.35)
     default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.35)
