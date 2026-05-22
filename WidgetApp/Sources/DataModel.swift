@@ -1,13 +1,38 @@
 import Foundation
 
 struct TimeEntry: Codable, Identifiable {
-    var id: String { "\(category)_\(project)_\(start)_\(end)" }
+    let id: String
     let category: String
     let project: String
     let start: String
     let end: String
     let name: String
     let durationMin: Int
+
+    init(category: String, project: String, start: String, end: String, name: String, durationMin: Int) {
+        self.category = category
+        self.project = project
+        self.start = start
+        self.end = end
+        self.name = name
+        self.durationMin = durationMin
+        self.id = "\(name)|\(start)|\(end)"
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case category, project, start, end, name, durationMin
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        category = try c.decode(String.self, forKey: .category)
+        project = try c.decode(String.self, forKey: .project)
+        start = try c.decode(String.self, forKey: .start)
+        end = try c.decode(String.self, forKey: .end)
+        name = try c.decode(String.self, forKey: .name)
+        durationMin = try c.decode(Int.self, forKey: .durationMin)
+        id = "\(name)|\(start)|\(end)"
+    }
 }
 
 struct WidgetData: Codable {

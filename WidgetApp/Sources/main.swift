@@ -10,11 +10,11 @@ struct TimeWidgetApp: App {
     var body: some Scene {
         WindowGroup {
             TimelineView(data: loader.data)
-                .frame(minWidth: 600, minHeight: 500)
+                .frame(minWidth: 120, minHeight: 400)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .defaultSize(width: 660, height: 840)
+        .defaultSize(width: 180, height: 1060)
     }
 }
 
@@ -39,7 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.standardWindowButton(.zoomButton)?.isHidden = true
 
             if let builtin = NSScreen.screens.first {
-                let w: CGFloat = 660, h: CGFloat = 840
+                let w: CGFloat = 180, h: CGFloat = 1060
                 let f = builtin.visibleFrame
                 window.setFrame(
                     NSRect(x: f.maxX - w - 6, y: f.maxY - h - 6,
