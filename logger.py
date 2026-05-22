@@ -1,13 +1,10 @@
-import os
 import sys
 import requests
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
+from config import get_notion_api_key, get_notion_database_id
 
-# 1. 加载本地隐藏的 .env 文件（绝不上云，保证隐私）
-load_dotenv()
-NOTION_API_KEY = os.getenv("NOTION_API_KEY")
-DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+NOTION_API_KEY = get_notion_api_key()
+DATABASE_ID = get_notion_database_id()
 
 def push_to_notion(app_name, duration_minutes):
     url = "https://api.notion.com/v1/pages"
