@@ -1,10 +1,11 @@
 import SwiftUI
+import AppKit
 
 private let hourStart = 8
 private let hourEnd = 27
 private let totalHours = hourEnd - hourStart
-private let hourHeight: CGFloat = 46
-private let colW: CGFloat = 100
+private let hourHeight: CGFloat = 50
+private let colW: CGFloat = 106
 private let blockFontSize: CGFloat = 11
 
 private let dayFmt: DateFormatter = {
@@ -54,7 +55,7 @@ struct TimelineView: View {
         .background(Color.black.opacity(0.22))
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .padding(6)
-        .frame(width: 7 * colW + 80, height: CGFloat(totalHours) * hourHeight + 72)
+        .frame(width: 7 * colW + 86, height: CGFloat(totalHours) * hourHeight + 78)
     }
 
     private func buildFilteredDict(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {
@@ -139,7 +140,7 @@ struct DayColumn: View {
                 VStack(spacing: 0) {
                     ForEach(0..<totalHours, id: \.self) { i in
                         Rectangle()
-                            .fill(Color.white.opacity(i % 3 == 0 ? 0.06 : 0.025))
+                            .fill(Color.white.opacity(i % 2 == 0 ? 0.06 : 0.025))
                             .frame(width: colW, height: hourHeight)
                     }
                 }
@@ -169,8 +170,10 @@ struct DayColumn: View {
             if s == nil || ed == nil { groups.append([e]); continue }
             var placed = false
             for i in 0..<groups.count {
-                let lastInGroup = groups[i].last!
-                if let glastEnd = iso.date(from: lastInGroup.end), s! >= glastEnd {
+                let firstInGroup = groups[i].first!
+                if let gStart = iso.date(from: firstInGroup.start),
+                   let gEnd = iso.date(from: firstInGroup.end),
+                   s! < gEnd && ed! > gStart {  // 时间重叠 → 同组
                     groups[i].append(e); placed = true; break
                 }
             }
@@ -212,7 +215,9 @@ struct TimeBlockView: View {
 
         Text(entry.project)
             .font(.system(size: blockFontSize, weight: .semibold))
-            .lineLimit(2)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .minimumScaleFactor(0.7)
             .foregroundColor(.white)
             .padding(.horizontal, 3)
             .padding(.vertical, 2)
@@ -220,6 +225,11 @@ struct TimeBlockView: View {
             .background(morandiColor(entry.category))
             .cornerRadius(3)
             .offset(x: xOff, y: y)
+            .onTapGesture {
+                if let url = URL(string: "https://www.notion.so/36679f2dabbc8034b450e66d5596cc22") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
     }
 
     private func layout() -> (CGFloat, CGFloat) {
@@ -245,10 +255,10 @@ struct TimeBlockView: View {
 
 func morandiColor(_ cat: String) -> Color {
     switch cat {
-    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.30)
-    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.30)
-    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.30)
-    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.30)
+    case "Research":       return Color(red: 0.38, green: 0.50, blue: 0.72).opacity(0.70)
+    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.70)
+    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
+    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
     case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.40)
     case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.35)
     default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.35)

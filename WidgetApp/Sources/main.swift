@@ -14,7 +14,7 @@ struct TimeWidgetApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .defaultSize(width: 800, height: 960)
+        .defaultSize(width: 830, height: 1030)
     }
 }
 
@@ -39,11 +39,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.standardWindowButton(.zoomButton)?.isHidden = true
 
             if let builtin = NSScreen.screens.first {
-                let w: CGFloat = 800, h: CGFloat = 960
+                let w: CGFloat = 830, h: CGFloat = 1030
                 let f = builtin.visibleFrame
-                let y = f.minY + (f.height - h) / 2 - 12
+                let y = f.minY + 40   // 固定上边距 40px
                 window.setFrame(
-                    NSRect(x: f.maxX - w - 6, y: y,
+                    NSRect(x: f.maxX - w - 20, y: y,
                            width: w, height: h), display: true)
             }
         }
