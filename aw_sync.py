@@ -450,6 +450,7 @@ def cmd_set_rule(context, category, project):
 
 if __name__ == "__main__":
     import sys
+    sys.stdout.reconfigure(line_buffering=True)  # launchd 后台模式实时写日志
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         if cmd == "--list-rules":
