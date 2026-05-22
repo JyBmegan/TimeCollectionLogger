@@ -33,15 +33,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.isMovableByWindowBackground = true
             window.styleMask.insert(.nonactivatingPanel)
 
-            // 主屏幕右下角
-            if let main = NSScreen.main {
+            // 始终用内建屏幕（screens[0]），不受外接屏影响
+            if let builtin = NSScreen.screens.first {
                 let w: CGFloat = 750, h: CGFloat = 820
-                let f = main.visibleFrame
+                let f = builtin.visibleFrame
                 window.setFrame(
                     NSRect(x: f.maxX - w - 30, y: f.maxY - h - 30,
                            width: w, height: h), display: true)
-            } else {
-                window.center()
             }
         }
     }

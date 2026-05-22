@@ -36,8 +36,8 @@ struct TimelineView: View {
             Text("").frame(height: 22)
             ForEach(hourStart..<hourEnd, id: \.self) { h in
                 Text(String(format: "%02d:00", h))
-                    .font(.system(size: 9, weight: .light, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.35))
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.55))
                     .frame(height: hourHeight, alignment: .top)
             }
         }
@@ -107,11 +107,11 @@ struct DayColumn: View {
         return AnyView(
             VStack(spacing: 1) {
                 Text(dayName)
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundColor(.white.opacity(isToday ? 0.9 : 0.45))
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(.white.opacity(isToday ? 0.95 : 0.65))
                 Text(String(format: "%02d", dayNum))
                     .font(.system(size: 14, weight: isToday ? .bold : .regular, design: .rounded))
-                    .foregroundColor(isToday ? .white : .white.opacity(0.55))
+                    .foregroundColor(isToday ? .white : .white.opacity(0.7))
             }
             .frame(maxWidth: .infinity)
             .background(isToday ? Color.white.opacity(0.15) : Color.clear)
