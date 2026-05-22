@@ -25,12 +25,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.isOpaque = false
             window.backgroundColor = .clear
             let desk = CGWindowLevelForKey(.desktopIconWindow)
-            window.level = NSWindow.Level(rawValue: Int(desk))
+            window.level = NSWindow.Level(rawValue: Int(desk + 1))
             window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
             window.hasShadow = false
             window.canHide = false
             window.titlebarAppearsTransparent = true
             window.isMovableByWindowBackground = true
+            window.ignoresMouseEvents = false
             // .nonactivatingPanel 不兼容 NSWindow，已移除
 
             // 隐藏红绿灯

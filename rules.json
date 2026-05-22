@@ -1,0 +1,170 @@
+{
+    "qq": [
+        "Entertainment",
+        "QQ"
+    ],
+    "系统事件": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "trustagent": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: eegdataanalysis": [
+        "Research",
+        "BrainMU"
+    ],
+    "终端": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: data": [
+        "Research",
+        "BrainMU"
+    ],
+    "飞书": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "微信": [
+        "Entertainment",
+        "WeChat"
+    ],
+    "vscode: cuihu]": [
+        "Research",
+        "BrainMU"
+    ],
+    "vscode: unnamed": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft excel: annotation": [
+        "Research",
+        "BrainMU"
+    ],
+    "vscode: no-overlap.json — data": [
+        "Research",
+        "BrainMU"
+    ],
+    "备忘录": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: timecollectionlogger": [
+        "Research",
+        "TimeCollectionLogger"
+    ],
+    "notion: time flow": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "访达": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "预览": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "网易邮箱大师": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "lark helper": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "lark": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "系统设置": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "zoom.us": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "aurora slim": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: brainmu": [
+        "Research",
+        "BrainMU"
+    ],
+    "timewidget": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "web: qq.com": [
+        "Web",
+        "qq.com"
+    ],
+    "vscode: preemption": [
+        "Research",
+        "ViewPointPreemption"
+    ],
+    "web: feishu.cn": [
+        "Web",
+        "feishu.cn"
+    ],
+    "web: google.com": [
+        "Web",
+        "google.com"
+    ],
+    "web: arxiv.org": [
+        "Web",
+        "arxiv.org"
+    ],
+    "web: sciencedirect.com": [
+        "Web",
+        "sciencedirect.com"
+    ],
+    "web: openathens.net": [
+        "Web",
+        "openathens.net"
+    ],
+    "web: nih.gov": [
+        "Web",
+        "nih.gov"
+    ],
+    "web: elsevier.com": [
+        "Web",
+        "elsevier.com"
+    ],
+    "notion: time flow | table": [
+        "Research",
+        "TimeCollectionLogger"
+    ],
+    "microsoft excel: treebankpapers_metadata": [
+        "Research",
+        "BrainMU"
+    ],
+    "notion: time flow | data": [
+        "Research",
+        "TimeLogger"
+    ],
+    "web: 8.184:5244": [
+        "Web",
+        "8.184:5244"
+    ],
+    "microsoft excel: treebankpapers_survey": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: treebankpapers_benchmark": [
+        "Research",
+        "BrainMU"
+    ],
+    "notion: time flow | chart": [
+        "Uncategorized",
+        "Pending"
+    ],
+    "microsoft excel: 本科生：团支部团员党员发展记录表": [
+        "Uncategorized",
+        "Pending"
+    ]
+}
