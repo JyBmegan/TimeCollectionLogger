@@ -3,7 +3,7 @@ import SwiftUI
 private let hourStart = 8
 private let hourEnd = 27
 private let totalHours = hourEnd - hourStart
-private let hourHeight: CGFloat = 52
+private let hourHeight: CGFloat = 46
 private let colW: CGFloat = 100
 private let blockFontSize: CGFloat = 11
 
@@ -22,11 +22,11 @@ struct TimelineView: View {
             if let data = data {
                 // 本周 7 天，昨天留空，只显示今天
                 let days = buildDays(from: data.weekStart)
-                let byDay = buildTodayDict(data.entries)
+                let byDay = buildFilteredDict(data.entries)
 
                 HStack(alignment: .top, spacing: 4) {
                     VStack(alignment: .trailing, spacing: 0) {
-                        Color.clear.frame(height: 26)
+                        Color.clear.frame(height: 32)
                         ForEach(hourStart..<hourEnd, id: \.self) { h in
                             let d = h <= 24 ? h : h - 24
                             Text(String(format: "%02d:00", d))
@@ -54,15 +54,19 @@ struct TimelineView: View {
         .background(Color.black.opacity(0.22))
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .padding(6)
-        .frame(width: 7 * colW + 80, height: CGFloat(totalHours) * hourHeight + 60)
+        .frame(width: 7 * colW + 80, height: CGFloat(totalHours) * hourHeight + 72)
     }
 
-    private func buildTodayDict(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {
+    private func buildFilteredDict(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {
         let todayKey = dayFmt.string(from: Date())
         let cleaned = entries.filter { $0.durationMin >= 3 }.map(cleanEntry)
         let allByDay = groupByDay(cleaned)
-        guard let today = allByDay[todayKey] else { return [:] }
-        return [todayKey: mergeAdjacent(today)]
+        // 只保留今天及之后，丢弃昨天碎片
+        var result: [String: [TimeEntry]] = [:]
+        for (day, dayEntries) in allByDay where day >= todayKey {
+            result[day] = mergeAdjacent(dayEntries)
+        }
+        return result
     }
 
     private func cleanEntry(_ e: TimeEntry) -> TimeEntry {
@@ -129,7 +133,7 @@ struct DayColumn: View {
     var body: some View {
         VStack(spacing: 0) {
             dayHeaderView
-                .frame(width: colW, height: 26)
+                .frame(width: colW, height: 32)
 
             ZStack(alignment: .topLeading) {
                 VStack(spacing: 0) {
