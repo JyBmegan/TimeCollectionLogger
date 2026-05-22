@@ -14,7 +14,7 @@ struct TimeWidgetApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .defaultSize(width: 750, height: 820)
+        .defaultSize(width: 750, height: 920)
     }
 }
 
@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.canHide = false
             window.titlebarAppearsTransparent = true
             window.isMovableByWindowBackground = true
-            window.styleMask.insert(.nonactivatingPanel)
+            // .nonactivatingPanel 不兼容 NSWindow，已移除
 
             // 隐藏红绿灯
             window.standardWindowButton(.closeButton)?.isHidden = true
@@ -39,7 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.standardWindowButton(.zoomButton)?.isHidden = true
 
             if let builtin = NSScreen.screens.first {
-                let w: CGFloat = 750, h: CGFloat = 820
+                let w: CGFloat = 750, h: CGFloat = 920
                 let f = builtin.visibleFrame
                 window.setFrame(
                     NSRect(x: f.maxX - w - 30, y: f.maxY - h - 30,
