@@ -20,9 +20,11 @@ struct TimelineView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let data = data {
-                let today = dayFmt.string(from: Date())
-                // 只显示今天
-                let days = [today]
+                // 显示最近 3 天
+                let today = Date()
+                let days = [-1, 0, 1].map {
+                    dayFmt.string(from: Calendar.current.date(byAdding: .day, value: $0, to: today)!)
+                }
                 let allEntries = data.entries
                     .filter { $0.durationMin >= 3 }
                     .map(cleanEntry)
@@ -59,7 +61,7 @@ struct TimelineView: View {
         .background(Color.black.opacity(0.22))
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .padding(6)
-        .frame(width: colW + 60, height: CGFloat(totalHours) * hourHeight + 60)
+        .frame(width: 3 * colW + 60, height: CGFloat(totalHours) * hourHeight + 60)
     }
 
     private func cleanEntry(_ e: TimeEntry) -> TimeEntry {
@@ -203,24 +205,16 @@ struct TimeBlockView: View {
         let subW = (colW - 2) / CGFloat(groupCount)
         let xOff = CGFloat(groupIndex) * subW + 1
 
-        VStack(alignment: .leading, spacing: 0) {
-            Text(entry.name)
-                .font(.system(size: blockFontSize, weight: .semibold))
-                .lineLimit(1)
-                .foregroundColor(.white)
-            if blockH > 18 {
-                Text(entry.project)
-                    .font(.system(size: blockFontSize - 2))
-                    .lineLimit(1)
-                    .foregroundColor(.white.opacity(0.85))
-            }
-        }
-        .padding(.horizontal, 3)
-        .padding(.vertical, 2)
-        .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
-        .background(morandiColor(entry.category))
-        .cornerRadius(3)
-        .offset(x: xOff, y: y)
+        Text(entry.project)
+            .font(.system(size: blockFontSize, weight: .semibold))
+            .lineLimit(2)
+            .foregroundColor(.white)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 2)
+            .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
+            .background(morandiColor(entry.category))
+            .cornerRadius(3)
+            .offset(x: xOff, y: y)
     }
 
     private func layout() -> (CGFloat, CGFloat) {
@@ -246,12 +240,12 @@ struct TimeBlockView: View {
 
 func morandiColor(_ cat: String) -> Color {
     switch cat {
-    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.55)
-    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.55)
-    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.55)
-    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.55)
-    case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.52)
-    case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.45)
-    default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.45)
+    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.42)
+    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.42)
+    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.42)
+    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.42)
+    case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.40)
+    case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.35)
+    default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.35)
     }
 }
