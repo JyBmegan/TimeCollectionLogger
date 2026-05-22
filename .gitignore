@@ -15,3 +15,7 @@ wheels/
 # Runtime
 logs/
 state.json
+
+# Widget build artifacts
+WidgetApp/TimeWidget
+WidgetApp/TimeWidget.app

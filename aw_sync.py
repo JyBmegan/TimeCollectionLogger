@@ -247,6 +247,24 @@ def _push_session(sess):
         sess['name'], sess['category'], sess['project'],
         int(sess['duration'] // 60), sess['start'], sess['end'])
 
+_WIDGET_EXPORT_LAST = None
+
+def _export_widget_cache():
+    """每次扫描周期刷新 widget JSON（但最多每 10 分钟一次）。"""
+    global _WIDGET_EXPORT_LAST
+    now = datetime.now(timezone.utc)
+    if _WIDGET_EXPORT_LAST and (now - _WIDGET_EXPORT_LAST).total_seconds() < 600:
+        return
+
+    import sys, os
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "widget_export.py")
+    subprocess.run(
+        [sys.executable, script],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        timeout=30
+    )
+    _WIDGET_EXPORT_LAST = now
+
 def _drain_buffer(buffer, now, force=False):
     """推出所有满足条件的 session，返回剩余 buffer。"""
     remaining = []
@@ -409,6 +427,13 @@ def daemon_loop():
             session_buffer = _drain_buffer(session_buffer, now)
 
             save_state(now)
+
+            # 每次扫描后刷新 widget 数据
+            try:
+                _export_widget_cache()
+            except Exception:
+                pass
+
             time.sleep(30)
 
         except Exception as e:
