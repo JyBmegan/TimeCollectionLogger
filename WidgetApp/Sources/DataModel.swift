@@ -1,12 +1,10 @@
 import Foundation
 
-// MARK: - 从 JSON 文件读取的数据模型
-
 struct TimeEntry: Codable, Identifiable {
     var id: String { "\(category)_\(project)_\(start)_\(end)" }
     let category: String
     let project: String
-    let start: String   // ISO 8601
+    let start: String
     let end: String
     let name: String
     let durationMin: Int
@@ -14,47 +12,62 @@ struct TimeEntry: Codable, Identifiable {
 
 struct WidgetData: Codable {
     let updated: String
-    let weekStart: String  // "2026-05-18" (Monday)
+    let weekStart: String
     let entries: [TimeEntry]
 }
 
-// MARK: - JSON 加载
+struct BufferDump: Codable {
+    let entries: [TimeEntry]
+}
 
 class DataLoader: ObservableObject {
     @Published var data: WidgetData?
     @Published var error: String?
 
     private let cachePath = NSHomeDirectory() + "/.timecollectionlogger/widget_data.json"
+    private let bufferPath = NSHomeDirectory() + "/.timecollectionlogger/buffer_dump.json"
     private var timer: Timer?
-    private var lastModified: Date?
 
     init() {
         load()
-        timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
-            self?.checkAndReload()
+        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.load()
         }
     }
 
     func load() {
-        guard FileManager.default.fileExists(atPath: cachePath) else {
-            error = "数据文件不存在 (首次运行请先同步 Notion)"
-            return
+        var entries: [TimeEntry] = []
+        var updated = ""
+        var weekStart = ""
+
+        // 1. 读 Notion 数据
+        if let d = _loadWidgetData() {
+            entries = d.entries
+            updated = d.updated
+            weekStart = d.weekStart
         }
-        do {
-            let raw = try Data(contentsOf: URL(fileURLWithPath: cachePath))
-            data = try JSONDecoder().decode(WidgetData.self, from: raw)
-            error = nil
-            lastModified = try FileManager.default
-                .attributesOfItem(atPath: cachePath)[.modificationDate] as? Date
-        } catch let e {
-            error = "数据解析失败: \(e.localizedDescription)"
+
+        // 2. 合并今天缓冲区未推送数据
+        if let buf = _loadBuffer() {
+            entries += buf.entries
         }
+
+        data = WidgetData(updated: updated, weekStart: weekStart, entries: entries)
     }
 
-    func checkAndReload() {
-        guard let path = try? FileManager.default
-            .attributesOfItem(atPath: cachePath)[.modificationDate] as? Date,
-              path != lastModified else { return }
-        load()
+    private func _loadWidgetData() -> WidgetData? {
+        guard FileManager.default.fileExists(atPath: cachePath) else { return nil }
+        do {
+            let raw = try Data(contentsOf: URL(fileURLWithPath: cachePath))
+            return try JSONDecoder().decode(WidgetData.self, from: raw)
+        } catch { return nil }
+    }
+
+    private func _loadBuffer() -> BufferDump? {
+        guard FileManager.default.fileExists(atPath: bufferPath) else { return nil }
+        do {
+            let raw = try Data(contentsOf: URL(fileURLWithPath: bufferPath))
+            return try JSONDecoder().decode(BufferDump.self, from: raw)
+        } catch { return nil }
     }
 }

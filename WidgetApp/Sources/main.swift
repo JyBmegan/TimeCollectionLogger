@@ -10,11 +10,11 @@ struct TimeWidgetApp: App {
     var body: some Scene {
         WindowGroup {
             TimelineView(data: loader.data)
-                .frame(minWidth: 800, minHeight: 500)
+                .frame(minWidth: 600, minHeight: 500)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .defaultSize(width: 1050, height: 660)
+        .defaultSize(width: 750, height: 820)
     }
 }
 
@@ -28,11 +28,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.level = NSWindow.Level(rawValue: Int(desk))
             window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
             window.hasShadow = false
-            window.canHide = false           // Show Desktop 时不隐藏
+            window.canHide = false
             window.titlebarAppearsTransparent = true
             window.isMovableByWindowBackground = true
             window.styleMask.insert(.nonactivatingPanel)
-            window.center()
+
+            // 主屏幕右下角
+            if let main = NSScreen.main {
+                let w: CGFloat = 750, h: CGFloat = 820
+                let f = main.visibleFrame
+                window.setFrame(
+                    NSRect(x: f.maxX - w - 30, y: f.maxY - h - 30,
+                           width: w, height: h), display: true)
+            } else {
+                window.center()
+            }
         }
     }
 }

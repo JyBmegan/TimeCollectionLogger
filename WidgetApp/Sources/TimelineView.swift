@@ -7,7 +7,7 @@ struct TimelineView: View {
     private let hourStart = 6
     private let hourEnd = 24
     private var totalHours: Int { hourEnd - hourStart }
-    private let hourHeight: CGFloat = 40
+    private let hourHeight: CGFloat = 44
 
     var body: some View {
         if let data = data {
@@ -177,12 +177,12 @@ struct TimeBlock: View {
 
 func blockColor(_ cat: String) -> Color {
     switch cat {
-    case "Research":       return Color(red: 0.35, green: 0.55, blue: 0.95).opacity(0.38)
-    case "Work":           return Color(red: 0.25, green: 0.75, blue: 0.50).opacity(0.38)
-    case "Entertainment":  return Color(red: 0.95, green: 0.55, blue: 0.20).opacity(0.38)
-    case "Entertainmen":   return Color(red: 0.95, green: 0.55, blue: 0.20).opacity(0.38)
-    case "Web":            return Color(red: 0.55, green: 0.55, blue: 0.60).opacity(0.32)
-    case "Offline":        return Color.white.opacity(0.15)
-    default:               return Color.white.opacity(0.22)
+    case "Research":       return Color(red: 0.30, green: 0.45, blue: 0.90).opacity(0.50)
+    case "Work":           return Color(red: 0.20, green: 0.65, blue: 0.55).opacity(0.50)
+    case "Entertainment":  return Color(red: 0.85, green: 0.45, blue: 0.55).opacity(0.50)
+    case "Entertainmen":   return Color(red: 0.85, green: 0.45, blue: 0.55).opacity(0.50)
+    case "Web":            return Color(red: 0.50, green: 0.55, blue: 0.65).opacity(0.45)
+    case "Offline":        return Color.white.opacity(0.18)
+    default:               return Color.white.opacity(0.28)
     }
 }

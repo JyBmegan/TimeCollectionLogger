@@ -248,15 +248,35 @@ def _push_session(sess):
         int(sess['duration'] // 60), sess['start'], sess['end'])
 
 _WIDGET_EXPORT_LAST = None
+BUFFER_DUMP_PATH = os.path.expanduser("~/.timecollectionlogger/buffer_dump.json")
 
-def _export_widget_cache():
+def _dump_buffer_for_widget(session_buffer):
+    """把当前缓冲区写到本地文件，供 widget 展示今天未推送数据。"""
+    os.makedirs(os.path.dirname(BUFFER_DUMP_PATH), exist_ok=True)
+    entries = []
+    for s in session_buffer:
+        entries.append({
+            "category": s["category"], "project": s["project"],
+            "start": s["start"].isoformat(), "end": s["end"].isoformat(),
+            "name": s["name"],
+            "durationMin": int(s["duration"] // 60),
+        })
+    with open(BUFFER_DUMP_PATH, "w") as f:
+        json.dump({"entries": entries}, f)
+
+def _export_widget_cache(session_buffer=None):
     """每次扫描周期刷新 widget JSON（但最多每 10 分钟一次）。"""
     global _WIDGET_EXPORT_LAST
     now = datetime.now(timezone.utc)
     if _WIDGET_EXPORT_LAST and (now - _WIDGET_EXPORT_LAST).total_seconds() < 600:
+        if session_buffer:
+            _dump_buffer_for_widget(session_buffer)
         return
 
-    import sys, os
+    if session_buffer:
+        _dump_buffer_for_widget(session_buffer)
+
+    import sys
     script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "widget_export.py")
     subprocess.run(
         [sys.executable, script],
@@ -428,9 +448,9 @@ def daemon_loop():
 
             save_state(now)
 
-            # 每次扫描后刷新 widget 数据
+            # 每次扫描后刷新 widget 数据（含缓冲区未推送条目）
             try:
-                _export_widget_cache()
+                _export_widget_cache(session_buffer)
             except Exception:
                 pass
 
