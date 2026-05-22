@@ -98,6 +98,14 @@ struct TimelineView: View {
         return result
     }
 
+    private func mergeGap(for category: String) -> TimeInterval {
+        switch category {
+        case "Research", "Exploration", "Work": return 1800   // 30min
+        case "Entertainment", "Entertainmen", "Web": return 300 // 5min
+        default: return 600  // 10min
+        }
+    }
+
     private func mergeAdjacent(_ entries: [TimeEntry]) -> [TimeEntry] {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -106,22 +114,34 @@ struct TimelineView: View {
         }
         var merged: [TimeEntry] = []
         for e in sorted {
-            if let last = merged.last,
-               last.name == e.name,
-               last.category == e.category,
-               last.project == e.project,
-               let lastEnd = iso.date(from: last.end),
-               let thisStart = iso.date(from: e.start),
-               thisStart.timeIntervalSince(lastEnd) < 600 {
-                merged[merged.count - 1] = TimeEntry(
-                    category: last.category, project: last.project,
-                    start: last.start, end: e.end, name: last.name,
-                    durationMin: last.durationMin + e.durationMin)
-            } else {
-                merged.append(e)
+            var found = false
+            // 检查所有已合并条目（不只是最后一条），同 category+project 在合并窗口内即合并
+            for i in merged.indices.reversed() {
+                let prev = merged[i]
+                guard prev.category == e.category,
+                      prev.project == e.project,
+                      let prevEnd = iso.date(from: prev.end),
+                      let thisStart = iso.date(from: e.start),
+                      thisStart.timeIntervalSince(prevEnd) < mergeGap(for: e.category)
+                else { continue }
+                merged[i] = TimeEntry(
+                    category: prev.category, project: prev.project,
+                    start: prev.start, end: maxIso(prev.end, e.end),
+                    name: prev.name.count >= e.name.count ? prev.name : e.name,
+                    durationMin: prev.durationMin + e.durationMin)
+                found = true
+                break
             }
+            if !found { merged.append(e) }
         }
         return merged
+    }
+
+    private func maxIso(_ a: String, _ b: String) -> String {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard let da = iso.date(from: a), let db = iso.date(from: b) else { return a }
+        return da >= db ? a : b
     }
 }
 
@@ -164,20 +184,22 @@ struct DayColumn: View {
             (iso.date(from: a.start) ?? Date.distantPast) < (iso.date(from: a.start) ?? Date.distantPast)
         }
         var groups: [[TimeEntry]] = []
+        var ranges: [(Date, Date)] = []  // 每组的时间覆盖范围
         for e in sorted {
-            let s = iso.date(from: e.start)
-            let ed = iso.date(from: e.end)
-            if s == nil || ed == nil { groups.append([e]); continue }
+            guard let s = iso.date(from: e.start),
+                  let ed = iso.date(from: e.end) else {
+                groups.append([e]); ranges.append((Date.distantPast, Date.distantFuture)); continue
+            }
             var placed = false
             for i in 0..<groups.count {
-                let firstInGroup = groups[i].first!
-                if let gStart = iso.date(from: firstInGroup.start),
-                   let gEnd = iso.date(from: firstInGroup.end),
-                   s! < gEnd && ed! > gStart {  // 时间重叠 → 同组
-                    groups[i].append(e); placed = true; break
+                let (gS, gE) = ranges[i]
+                if s < gE && ed > gS {  // 与组范围有重叠
+                    groups[i].append(e)
+                    ranges[i] = (min(gS, s), max(gE, ed))
+                    placed = true; break
                 }
             }
-            if !placed { groups.append([e]) }
+            if !placed { groups.append([e]); ranges.append((s, ed)) }
         }
         return groups
     }
@@ -213,23 +235,23 @@ struct TimeBlockView: View {
         let subW = (colW - 2) / CGFloat(groupCount)
         let xOff = CGFloat(groupIndex) * subW + 1
 
-        Text(entry.project)
-            .font(.system(size: blockFontSize, weight: .semibold))
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .minimumScaleFactor(0.7)
-            .foregroundColor(.white)
-            .padding(.horizontal, 3)
-            .padding(.vertical, 2)
-            .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
-            .background(morandiColor(entry.category))
-            .cornerRadius(3)
-            .offset(x: xOff, y: y)
-            .onTapGesture {
-                if let url = URL(string: "https://www.notion.so/36679f2dabbc8034b450e66d5596cc22") {
-                    NSWorkspace.shared.open(url)
-                }
-            }
+        Button(action: {
+            NSWorkspace.shared.open(URL(string: "https://www.notion.so/36679f2dabbc8034b450e66d5596cc22")!)
+        }) {
+            Text(entry.project)
+                .font(.system(size: blockFontSize, weight: .semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .minimumScaleFactor(0.7)
+                .foregroundColor(.white)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 2)
+                .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
+                .background(morandiColor(entry.category))
+                .cornerRadius(3)
+        }
+        .buttonStyle(.plain)
+        .offset(x: xOff, y: y)
     }
 
     private func layout() -> (CGFloat, CGFloat) {
@@ -256,6 +278,7 @@ struct TimeBlockView: View {
 func morandiColor(_ cat: String) -> Color {
     switch cat {
     case "Research":       return Color(red: 0.38, green: 0.50, blue: 0.72).opacity(0.70)
+    case "Exploration":    return Color(red: 0.55, green: 0.45, blue: 0.70).opacity(0.70)
     case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.70)
     case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
     case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)

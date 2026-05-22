@@ -60,6 +60,12 @@ def load_rules():
 def save_rules(rules):
     with open(RULES_FILE, "w", encoding="utf-8") as f: json.dump(rules, f, indent=4, ensure_ascii=False)
 
+def _existing_categories(rules):
+    """提取已有的一级分类（去重），用于弹窗提示。"""
+    cats = sorted(set(v[0] for v in rules.values()
+                     if v[0] not in ("IGNORE", "Uncategorized")))
+    return ", ".join(cats) if cats else "无"
+
 def ask_mac_dialog(title, prompt, default_ans=""):
     safe_prompt = prompt.replace('"', "'")
     applescript = f'''
@@ -74,6 +80,40 @@ def ask_mac_dialog(title, prompt, default_ans=""):
     try:
         return subprocess.check_output(['osascript', '-e', applescript], text=True, stderr=subprocess.DEVNULL).strip()
     except: return "TIMEOUT"
+
+def ask_classification_dialog(context_name, rules):
+    """两步分类弹窗：先选大类，再输项目名。"""
+    # 1. 选大类
+    cats = sorted(set(v[0] for v in rules.values()
+                     if v[0] not in ("IGNORE", "Uncategorized")))
+    cats_for_list = '", "'.join(cats)
+    cats_for_list = f'"新建...", "{cats_for_list}"' if cats else '"新建..."'
+
+    applescript = f'''
+    tell application "System Events"
+        activate
+        set catList to {{{cats_for_list}}}
+        set catChoice to choose from list catList with title "分类: {context_name}" with prompt "选择大类（或选「新建...」）" default items {{item 1 of catList}}
+        if catChoice is false then return "CANCEL"
+        set chosenCat to item 1 of catChoice
+        if chosenCat is "新建..." then
+            set catDialog to display dialog "输入新大类名称:" default answer "" buttons {{"取消", "确定"}} default button "确定" with title "新建大类"
+            if button returned of catDialog is "取消" then return "CANCEL"
+            set chosenCat to text returned of catDialog
+        end if
+        set projDialog to display dialog "大类: " & chosenCat & return & "输入具体项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "项目名称"
+        if button returned of projDialog is "忽略" then return chosenCat & "/IGNORE"
+        return chosenCat & "/" & (text returned of projDialog)
+    end tell
+    '''
+    try:
+        result = subprocess.check_output(
+            ['osascript', '-e', applescript], text=True, stderr=subprocess.DEVNULL).strip()
+        if result == "CANCEL":
+            return "TIMEOUT"
+        return result
+    except:
+        return "TIMEOUT"
 
 def parse_vscode_project(title):
     match = re.search(r'[—\-]\s*(.*?)\s*(?:\[SSH:|\(Workspace\))', title)
@@ -285,8 +325,16 @@ def _export_widget_cache(session_buffer=None):
     )
     _WIDGET_EXPORT_LAST = now
 
-def _drain_buffer(buffer, now, force=False):
+def _drain_buffer(buffer, now, force=False, rules=None):
     """推出所有满足条件的 session，返回剩余 buffer。"""
+    # 用最新规则刷新 session 的分类
+    if rules:
+        for sess in buffer:
+            ctx_key = sess.get('context_key', '')
+            if ctx_key and ctx_key in rules:
+                sess['category'], sess['project'] = rules[ctx_key]
+                sess['key'] = f"{sess['name']}|{sess['category']}|{sess['project']}"
+
     remaining = []
     to_push = []
     for sess in buffer:
@@ -336,7 +384,7 @@ def daemon_loop():
                 time.sleep(30)
                 # 即使不满 5 分钟，也检查有没有该推的 session
                 if len(session_buffer) > MAX_BUFFER_SIZE:
-                    session_buffer = _drain_buffer(session_buffer, now, force=True)
+                    session_buffer = _drain_buffer(session_buffer, now, force=True, rules=rules)
                 continue
 
             print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 扫描新活动 (缓冲: {len(session_buffer)} 个 session)...")
@@ -347,7 +395,7 @@ def daemon_loop():
             for event in afk_events:
                 mins = int(event['duration'] // 60)
                 if mins >= 15:
-                    session_buffer = _drain_buffer(session_buffer, now, force=True)
+                    session_buffer = _drain_buffer(session_buffer, now, force=True, rules=rules)
                     prompt = f"欢迎回来！\n系统检测到你离开了 {mins} 分钟。\n这段时间你在做什么？"
                     res = ask_mac_dialog("离线时间捕捉", prompt)
                     if res == "IGNORE":
@@ -391,29 +439,30 @@ def daemon_loop():
                     rules[context_name.lower()] = [l1_cat, l2_proj]
                     save_rules(rules)
                 elif any(context_name.startswith(p) for p in SMART_WEB_DOMAINS.values()):
-                    # AI 对话平台 → 弹窗分类（可能属于不同项目）
-                    prompt = f"AI 对话: 【{context_name}】\n-> 请分类 (格式: 大类/具体项目)"
-                    res = ask_mac_dialog("待分类记录", prompt)
+                    # AI 对话平台 → 两步分类弹窗
+                    res = ask_classification_dialog("AI: " + context_name, rules)
                     if res == "TIMEOUT" or res is None:
                         l1_cat, l2_proj = "Web", "AI Chat"
-                    elif res == "IGNORE" or not res:
+                    elif "/IGNORE" in res:
                         l1_cat, l2_proj = "IGNORE", "IGNORE"
                     else:
-                        l1_cat, l2_proj = res.split("/", 1) if "/" in res else ("Uncategorized", res)
-                        l1_cat, l2_proj = l1_cat.strip(), l2_proj.strip()
+                        parts = res.split("/", 1)
+                        l1_cat = parts[0].strip()
+                        l2_proj = parts[1].strip() if len(parts) > 1 else "General"
                     rules[context_name.lower()] = [l1_cat, l2_proj]
                     save_rules(rules)
                 else:
-                    prompt = f"发现新活动: 【{context_name}】\n-> 请分类 (格式: 大类/具体项目)"
-                    res = ask_mac_dialog("待分类记录", prompt)
+                    res = ask_classification_dialog(context_name, rules)
                     if res == "TIMEOUT" or res is None:
                         l1_cat, l2_proj = "Uncategorized", "Pending"
-                    elif res == "IGNORE" or not res:
-                        l1_cat, l2_proj = "IGNORE", "IGNORE"
+                    elif "/IGNORE" in res:
+                        parts = res.split("/", 1)
+                        l1_cat = parts[0].strip()
+                        l2_proj = "IGNORE"
                     else:
-                        l1_cat, l2_proj = res.split("/", 1) if "/" in res else ("Uncategorized", res)
-                        l1_cat, l2_proj = l1_cat.strip(), l2_proj.strip()
-
+                        parts = res.split("/", 1)
+                        l1_cat = parts[0].strip()
+                        l2_proj = parts[1].strip() if len(parts) > 1 else "Uncategorized"
                     rules[context_name.lower()] = [l1_cat, l2_proj]
                     save_rules(rules)
 
@@ -438,13 +487,14 @@ def daemon_loop():
                 if not matched:
                     session_buffer.append({
                         "key": session_key, "name": context_name,
+                        "context_key": context_name.lower(),
                         "category": l1_cat, "project": l2_proj,
                         "start": evt_start, "end": evt_end,
                         "duration": duration, "last_active": evt_end
                     })
 
             # ---------------- C. 排水：推送稳定/超长的 session ----------------
-            session_buffer = _drain_buffer(session_buffer, now)
+            session_buffer = _drain_buffer(session_buffer, now, rules=rules)
 
             save_state(now)
 
