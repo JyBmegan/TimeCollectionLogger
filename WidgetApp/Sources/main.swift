@@ -33,7 +33,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.isMovableByWindowBackground = true
             window.styleMask.insert(.nonactivatingPanel)
 
-            // 始终用内建屏幕（screens[0]），不受外接屏影响
+            // 隐藏红绿灯
+            window.standardWindowButton(.closeButton)?.isHidden = true
+            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+            window.standardWindowButton(.zoomButton)?.isHidden = true
+
             if let builtin = NSScreen.screens.first {
                 let w: CGFloat = 750, h: CGFloat = 820
                 let f = builtin.visibleFrame
