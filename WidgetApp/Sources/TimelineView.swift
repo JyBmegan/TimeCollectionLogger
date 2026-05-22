@@ -3,9 +3,9 @@ import SwiftUI
 private let hourStart = 8
 private let hourEnd = 27
 private let totalHours = hourEnd - hourStart
-private let hourHeight: CGFloat = 38
-private let colW: CGFloat = 76
-private let blockFontSize: CGFloat = 8
+private let hourHeight: CGFloat = 40
+private let colW: CGFloat = 80
+private let blockFontSize: CGFloat = 10
 
 private let dayFmt: DateFormatter = {
     let f = DateFormatter()
@@ -21,7 +21,9 @@ struct TimelineView: View {
         VStack(spacing: 0) {
             if let data = data {
                 let days = buildDays(from: data.weekStart)
-                let byDay = groupByDay(data.entries)
+                // 过滤碎片（<3min）并清理显示名
+                let cleaned = data.entries.filter { $0.durationMin >= 3 }.map(cleanEntry)
+                let byDay = groupByDay(cleaned)
                 let mergedByDay = byDay.mapValues { mergeAdjacent($0) }
 
                 HStack(alignment: .top, spacing: 0) {
@@ -54,7 +56,18 @@ struct TimelineView: View {
         .background(Color.black.opacity(0.22))
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .padding(6)
-        .frame(width: 620, height: 780)
+        .frame(width: 660, height: 840)
+    }
+
+    /// 清理显示名：去 "VSCode: "、"Web: " 等前缀，直接用项目/域名
+    private func cleanEntry(_ e: TimeEntry) -> TimeEntry {
+        var name = e.name
+        for prefix in ["VSCode: ", "Web: ", "Notion: ", "Microsoft Excel: "] {
+            if name.hasPrefix(prefix) { name = String(name.dropFirst(prefix.count)) }
+        }
+        return TimeEntry(category: e.category, project: e.project,
+                         start: e.start, end: e.end, name: name,
+                         durationMin: e.durationMin)
     }
 
     private func buildDays(from ws: String) -> [String] {
