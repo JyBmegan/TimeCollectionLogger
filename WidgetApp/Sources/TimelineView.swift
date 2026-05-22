@@ -245,10 +245,10 @@ struct TimeBlockView: View {
 
 func morandiColor(_ cat: String) -> Color {
     switch cat {
-    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.52)
-    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.52)
-    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.52)
-    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.52)
+    case "Research":       return Color(red: 0.48, green: 0.56, blue: 0.63).opacity(0.30)
+    case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.30)
+    case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.30)
+    case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.30)
     case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.40)
     case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.35)
     default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.35)

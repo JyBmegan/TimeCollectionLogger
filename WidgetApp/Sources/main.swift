@@ -41,8 +41,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let builtin = NSScreen.screens.first {
                 let w: CGFloat = 800, h: CGFloat = 960
                 let f = builtin.visibleFrame
+                let y = f.minY + (f.height - h) / 2 - 12
                 window.setFrame(
-                    NSRect(x: f.maxX - w - 6, y: f.midY - h / 2,
+                    NSRect(x: f.maxX - w - 6, y: y,
                            width: w, height: h), display: true)
             }
         }
