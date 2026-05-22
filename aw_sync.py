@@ -23,6 +23,21 @@ CONTAINER_APPS = {
     "office": ["Microsoft Word", "Microsoft Excel", "Microsoft PowerPoint", "Pages", "Numbers"]
 }
 
+# AI 对话/智能平台：提取标题中的对话主题，用于区分不同项目
+SMART_WEB_DOMAINS = {
+    "gemini.google.com": "Gemini",
+    "platform.deepseek.com": "DeepSeek",
+    "chatgpt.com": "ChatGPT",
+    "chat.openai.com": "ChatGPT",
+    "claude.ai": "Claude",
+}
+
+def _clean_browser_title(title):
+    for suffix in [" - Google Chrome", " - Safari", " - Arc", " - Edge", " - Firefox"]:
+        if title.endswith(suffix):
+            title = title[:-len(suffix)]
+    return title.strip()
+
 def load_state():
     if os.path.exists(STATE_FILE):
         try:
@@ -73,13 +88,26 @@ def parse_vscode_project(title):
 def extract_context_identifier(app, title, url):
     if app in CONTAINER_APPS["browsers"]:
         try:
-            domain = urlparse(url).netloc.replace("www.", "").lower()
-            if not domain: return None
-            # 提取主域名（feishu.cn 而非 jwolpxeehx.feishu.cn）
-            parts = domain.split(".")
-            if len(parts) > 2:
-                domain = ".".join(parts[-2:])
-            return f"Web: {domain}"
+            full_domain = urlparse(url).netloc.replace("www.", "").lower()
+            if not full_domain: return None
+
+            # AI 对话平台：先按完整域名匹配（gemini.google.com），
+            # 再提取对话主题
+            platform = SMART_WEB_DOMAINS.get(full_domain)
+            if platform:
+                cleaned = _clean_browser_title(title)
+                for suffix in [f" - Google {platform}", f" - {platform}"]:
+                    if cleaned.endswith(suffix):
+                        cleaned = cleaned[:-len(suffix)]
+                cleaned = cleaned.strip()
+                if cleaned and cleaned != platform and cleaned != f"Google {platform}":
+                    return f"{platform}: {cleaned[:40]}"
+                return platform
+
+            # 普通网站：提取主域名（feishu.cn 而非 jwolpxeehx.feishu.cn）
+            parts = full_domain.split(".")
+            main_domain = ".".join(parts[-2:]) if len(parts) > 2 else full_domain
+            return f"Web: {main_domain}"
         except: return None
     elif app in CONTAINER_APPS["editors"]:
         if app == "Code": return f"VSCode: {parse_vscode_project(title)}"
@@ -319,9 +347,22 @@ def daemon_loop():
                 if found:
                     l1_cat, l2_proj = found
                 elif context_name.startswith("Web: "):
-                    # 网页域名自动归类，不弹窗打扰
+                    # 普通网页自动归类，不弹窗
                     domain = context_name.replace("Web: ", "")
                     l1_cat, l2_proj = "Web", domain
+                    rules[context_name.lower()] = [l1_cat, l2_proj]
+                    save_rules(rules)
+                elif any(context_name.startswith(p) for p in SMART_WEB_DOMAINS.values()):
+                    # AI 对话平台 → 弹窗分类（可能属于不同项目）
+                    prompt = f"AI 对话: 【{context_name}】\n-> 请分类 (格式: 大类/具体项目)"
+                    res = ask_mac_dialog("待分类记录", prompt)
+                    if res == "TIMEOUT" or res is None:
+                        l1_cat, l2_proj = "Web", "AI Chat"
+                    elif res == "IGNORE" or not res:
+                        l1_cat, l2_proj = "IGNORE", "IGNORE"
+                    else:
+                        l1_cat, l2_proj = res.split("/", 1) if "/" in res else ("Uncategorized", res)
+                        l1_cat, l2_proj = l1_cat.strip(), l2_proj.strip()
                     rules[context_name.lower()] = [l1_cat, l2_proj]
                     save_rules(rules)
                 else:
