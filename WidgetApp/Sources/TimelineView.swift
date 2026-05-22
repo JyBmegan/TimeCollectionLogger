@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - 主时间轴
-
 struct TimelineView: View {
     let data: WidgetData?
     private let hourStart = 6
@@ -12,17 +10,20 @@ struct TimelineView: View {
     var body: some View {
         if let data = data {
             let days = buildDays(from: data.weekStart)
-            let byDay = groupByDay(data.entries)
+            let byDay = groupByDay(data.entries, days: days)
+
             HStack(spacing: 0) {
-                hourLabels
+                hourLabels.padding(.top, 24)
                 ForEach(days, id: \.self) { day in
                     DayColumn(date: day, entries: byDay[day] ?? [],
                               hourStart: hourStart, totalHours: totalHours,
                               hourHeight: hourHeight)
                 }
             }
-            .padding(.top, 24)
-            .padding(.horizontal, 8)
+            .padding(10)
+            .background(Color.black.opacity(0.14))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .padding(6)
         } else {
             Text("等待数据...")
                 .font(.system(size: 13, weight: .light))
@@ -32,15 +33,15 @@ struct TimelineView: View {
 
     private var hourLabels: some View {
         VStack(alignment: .trailing, spacing: 0) {
-            Text("").frame(height: 22) // 对齐日期头
+            Text("").frame(height: 22)
             ForEach(hourStart..<hourEnd, id: \.self) { h in
                 Text(String(format: "%02d:00", h))
                     .font(.system(size: 9, weight: .light, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundColor(.white.opacity(0.35))
                     .frame(height: hourHeight, alignment: .top)
             }
         }
-        .frame(width: 36)
+        .frame(width: 34)
         .padding(.trailing, 4)
     }
 
@@ -52,8 +53,17 @@ struct TimelineView: View {
         }
     }
 
-    private func groupByDay(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {
-        Dictionary(grouping: entries) { String($0.start.prefix(10)) }
+    private func groupByDay(_ entries: [TimeEntry], days: [String]) -> [String: [TimeEntry]] {
+        // 按本地日期分组（start 是 UTC ISO8601，需要转本地时区）
+        let iso = ISO8601DateFormatter()
+        let dayFmt = DateFormatter(); dayFmt.dateFormat = "yyyy-MM-dd"
+        var result: [String: [TimeEntry]] = [:]
+        for e in entries {
+            guard let d = iso.date(from: e.start) else { continue }
+            let key = dayFmt.string(from: d)
+            result[key, default: []].append(e)
+        }
+        return result
     }
 }
 
@@ -83,7 +93,6 @@ struct DayColumn: View {
                                   hourHeight: hourHeight)
                     }
                 }
-                .frame(width: w)
             }
         }
     }
@@ -93,8 +102,7 @@ struct DayColumn: View {
         guard let d = fmt.date(from: date) else { return AnyView(Text(date)) }
         let df = DateFormatter(); df.dateFormat = "E"
         let dayName = df.string(from: d)
-        let cal = Calendar.current
-        let dayNum = cal.component(.day, from: d)
+        let dayNum = Calendar.current.component(.day, from: d)
 
         return AnyView(
             VStack(spacing: 1) {
@@ -115,7 +123,7 @@ struct DayColumn: View {
         VStack(spacing: 0) {
             ForEach(0..<totalHours, id: \.self) { i in
                 Rectangle()
-                    .fill(Color.white.opacity(i % 3 == 0 ? 0.06 : 0.025))
+                    .fill(Color.white.opacity(i % 3 == 0 ? 0.05 : 0.02))
                     .frame(height: hourHeight)
             }
         }
@@ -132,30 +140,30 @@ struct TimeBlock: View {
 
     var body: some View {
         let (y, h) = layout(for: entry)
-        let w = max(colW - 3, 0)
-        let blockH = max(h - 2, 8)
+        let w = max(colW - 1, 0)
+        let blockH = max(h - 1, 8)
 
         VStack(alignment: .leading, spacing: 0) {
             Text(entry.name)
-                .font(.system(size: 8, weight: .medium))
+                .font(.system(size: 8, weight: .semibold))
                 .lineLimit(1)
-                .shadow(color: .black.opacity(0.5), radius: 0, y: 0.5)
+                .shadow(color: .black.opacity(0.4), radius: 0, y: 0.5)
             if blockH > 20 {
                 Text("\(entry.category) · \(entry.project)")
-                    .font(.system(size: 7, weight: .light))
+                    .font(.system(size: 7))
                     .lineLimit(1)
-                    .foregroundColor(.white.opacity(0.7))
-                    .shadow(color: .black.opacity(0.4), radius: 0, y: 0.5)
+                    .foregroundColor(.white.opacity(0.75))
+                    .shadow(color: .black.opacity(0.3), radius: 0, y: 0.5)
             }
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 3)
+        .padding(.vertical, 1)
         .frame(width: w, height: blockH, alignment: .topLeading)
         .background(blockColor(entry.category))
         .cornerRadius(4)
         .overlay(
             RoundedRectangle(cornerRadius: 4)
-                .stroke(blockColor(entry.category).opacity(0.6), lineWidth: 0.5)
+                .stroke(blockColor(entry.category).opacity(0.5), lineWidth: 0.5)
         )
         .offset(y: y)
     }
@@ -164,6 +172,8 @@ struct TimeBlock: View {
         let iso = ISO8601DateFormatter()
         guard let s = iso.date(from: e.start),
               let ed = iso.date(from: e.end) else { return (0, 10) }
+
+        // 显式用本地时区计算
         let cal = Calendar.current
         let top = (CGFloat(cal.component(.hour, from: s) - hourStart) * 60
                    + CGFloat(cal.component(.minute, from: s))) / 60 * hourHeight
@@ -173,15 +183,15 @@ struct TimeBlock: View {
     }
 }
 
-// MARK: - 分类配色
+// MARK: - 配色
 
 func blockColor(_ cat: String) -> Color {
     switch cat {
-    case "Research":       return Color(red: 0.30, green: 0.45, blue: 0.90).opacity(0.50)
-    case "Work":           return Color(red: 0.20, green: 0.65, blue: 0.55).opacity(0.50)
-    case "Entertainment":  return Color(red: 0.85, green: 0.45, blue: 0.55).opacity(0.50)
-    case "Entertainmen":   return Color(red: 0.85, green: 0.45, blue: 0.55).opacity(0.50)
-    case "Web":            return Color(red: 0.50, green: 0.55, blue: 0.65).opacity(0.45)
+    case "Research":       return Color(red: 0.30, green: 0.45, blue: 0.90).opacity(0.52)
+    case "Work":           return Color(red: 0.20, green: 0.65, blue: 0.55).opacity(0.52)
+    case "Entertainment":  return Color(red: 0.85, green: 0.45, blue: 0.55).opacity(0.52)
+    case "Entertainmen":   return Color(red: 0.85, green: 0.45, blue: 0.55).opacity(0.52)
+    case "Web":            return Color(red: 0.50, green: 0.55, blue: 0.65).opacity(0.48)
     case "Offline":        return Color.white.opacity(0.18)
     default:               return Color.white.opacity(0.28)
     }
