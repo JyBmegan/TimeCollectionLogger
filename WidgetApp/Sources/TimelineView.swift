@@ -145,14 +145,14 @@ struct TimeBlock: View {
 
         VStack(alignment: .leading, spacing: 0) {
             Text(entry.name)
-                .font(.system(size: 8, weight: .semibold))
+                .font(.system(size: 9, weight: .semibold))
                 .lineLimit(1)
                 .shadow(color: .black.opacity(0.4), radius: 0, y: 0.5)
-            if blockH > 20 {
+            if blockH > 16 {
                 Text("\(entry.category) · \(entry.project)")
-                    .font(.system(size: 7))
+                    .font(.system(size: 8))
                     .lineLimit(1)
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(.white.opacity(0.8))
                     .shadow(color: .black.opacity(0.3), radius: 0, y: 0.5)
             }
         }
