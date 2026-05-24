@@ -102,7 +102,7 @@ def ask_mac_dialog(title, prompt, default_ans=""):
     except: return "TIMEOUT"
 
 def ask_classification_dialog(context_name, rules):
-    """两步分类弹窗：先选大类，再输项目名。"""
+    """两步分类弹窗：先选大类，再选/输该项目名（只展示该大类下的已有项目）。"""
     # 1. 选大类
     cats = sorted(set(v[0] for v in rules.values()
                      if v[0] not in ("IGNORE", "Uncategorized")))
@@ -121,15 +121,38 @@ def ask_classification_dialog(context_name, rules):
             if button returned of catDialog is "取消" then return "CANCEL"
             set chosenCat to text returned of catDialog
         end if
-        set projDialog to display dialog "大类: " & chosenCat & return & "输入具体项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "项目名称"
+    '''
+
+    # 2. 选/输入项目名（只展示该大类下的已有项目）
+    projs = sorted(set(v[1] for v in rules.values()
+                       if v[0] == chosenCat and v[1] not in ("IGNORE", "Uncategorized", "Pending")))
+    if projs:
+        proj_list = '", "'.join(projs)
+        applescript += f'''
+        set projList to {{"新建...", "{proj_list}"}}
+        set projChoice to choose from list projList with title "{chosenCat} 下的项目" with prompt "选择项目（或选「新建...」）"
+        if projChoice is false then return chosenCat & "/CANCEL"
+        set chosenProj to item 1 of projChoice
+        if chosenProj is "新建..." then
+            set projDialog to display dialog "大类: " & chosenCat & return & "输入新项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "新建项目"
+            if button returned of projDialog is "忽略" then return chosenCat & "/IGNORE"
+            return chosenCat & "/" & (text returned of projDialog)
+        end if
+        return chosenCat & "/" & chosenProj
+    end tell
+    '''
+    else:
+        applescript += f'''
+        set projDialog to display dialog "大类: " & chosenCat & return & "输入项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "新建项目"
         if button returned of projDialog is "忽略" then return chosenCat & "/IGNORE"
         return chosenCat & "/" & (text returned of projDialog)
     end tell
     '''
+
     try:
         result = subprocess.check_output(
             ['osascript', '-e', applescript], text=True, stderr=subprocess.DEVNULL).strip()
-        if result == "CANCEL":
+        if result == "CANCEL" or result.endswith("/CANCEL"):
             return "TIMEOUT"
         return result
     except:

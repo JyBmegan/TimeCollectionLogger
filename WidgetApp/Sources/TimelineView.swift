@@ -278,6 +278,7 @@ func blockColor(_ cat: String) -> Color {
     switch cat {
     case "Research":       return Color(red: 0.38, green: 0.50, blue: 0.72).opacity(0.70)
     case "Exploration":    return Color(red: 0.55, green: 0.45, blue: 0.70).opacity(0.70)
+    case "Trivia":         return Color(red: 0.62, green: 0.58, blue: 0.52).opacity(0.70)
     case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.70)
     case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
     case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
