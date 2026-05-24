@@ -14,7 +14,7 @@ struct TimeWidgetApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .defaultSize(width: 830, height: 1030)
+        .defaultSize(width: 820, height: 1060)
     }
 }
 
@@ -22,31 +22,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         if let window = NSApplication.shared.windows.first {
-            window.isOpaque = false
-            window.backgroundColor = .clear
-            let desk = CGWindowLevelForKey(.desktopIconWindow)
-            window.level = NSWindow.Level(rawValue: Int(desk + 1))
-            window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
-            window.hasShadow = false
-            window.canHide = false
-            window.titlebarAppearsTransparent = true
-            window.isMovableByWindowBackground = true
-            window.ignoresMouseEvents = false
-            // .nonactivatingPanel 不兼容 NSWindow，已移除
-
-            // 隐藏红绿灯
-            window.standardWindowButton(.closeButton)?.isHidden = true
-            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-            window.standardWindowButton(.zoomButton)?.isHidden = true
-
-            if let builtin = NSScreen.screens.first {
-                let w: CGFloat = 830, h: CGFloat = 1030
-                let f = builtin.visibleFrame
-                let y = f.minY + 40   // 固定上边距 40px
-                window.setFrame(
-                    NSRect(x: f.maxX - w - 20, y: y,
-                           width: w, height: h), display: true)
-            }
+            setupWindow(window)
+            positionWindow(window)
         }
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil, queue: .main) { _ in
+                if let w = NSApplication.shared.windows.first {
+                    self.positionWindow(w)
+                }
+            }
+    }
+
+    func setupWindow(_ window: NSWindow) {
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        let desk = CGWindowLevelForKey(.desktopIconWindow)
+        window.level = NSWindow.Level(rawValue: Int(desk + 1))
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        window.hasShadow = false
+        window.canHide = false
+        window.titlebarAppearsTransparent = true
+        window.isMovable = false
+        window.isMovableByWindowBackground = false
+        window.ignoresMouseEvents = false
+        window.standardWindowButton(.closeButton)?.isHidden = true
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        window.standardWindowButton(.zoomButton)?.isHidden = true
+    }
+
+    func positionWindow(_ window: NSWindow) {
+        guard let builtin = NSScreen.screens.first else { return }
+        let f = builtin.visibleFrame
+        let w: CGFloat = min(f.width * 0.45, 820)
+        let h: CGFloat = min(f.height * 0.92, 1060)
+        let y = (f.minY + f.maxY - h) / 2
+        window.setFrame(
+            NSRect(x: f.maxX - w - 16, y: y, width: w, height: h),
+            display: true, animate: false)
     }
 }

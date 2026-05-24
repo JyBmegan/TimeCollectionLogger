@@ -14,6 +14,24 @@ AW_API_URL = "http://localhost:5600/api/0"
 
 RULES_FILE = "rules.json"
 STATE_FILE = "state.json"
+ICLOUD_RULES = os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs/TimeLogger/rules.json")
+
+def _sync_rules_from_icloud():
+    """如果 iCloud 上的规则比本地新，拉过来。"""
+    if os.path.exists(ICLOUD_RULES) and os.path.exists(RULES_FILE):
+        try:
+            if os.path.getmtime(ICLOUD_RULES) > os.path.getmtime(RULES_FILE):
+                import shutil
+                shutil.copy2(ICLOUD_RULES, RULES_FILE)
+        except: pass
+
+def _sync_rules_to_icloud():
+    """推送本地规则到 iCloud（忽略权限错误）。"""
+    try:
+        os.makedirs(os.path.dirname(ICLOUD_RULES), exist_ok=True)
+        import shutil
+        shutil.copy2(RULES_FILE, ICLOUD_RULES)
+    except: pass
 IGNORE_LIST = ["System Settings", "Finder", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA"]
 
 CONTAINER_APPS = {
@@ -51,6 +69,7 @@ def save_state(now_time):
     with open(STATE_FILE, "w") as f: json.dump({"last_check": now_time.isoformat()}, f)
 
 def load_rules():
+    _sync_rules_from_icloud()
     if os.path.exists(RULES_FILE):
         try:
             with open(RULES_FILE, "r") as f: return json.load(f)
@@ -59,6 +78,7 @@ def load_rules():
 
 def save_rules(rules):
     with open(RULES_FILE, "w", encoding="utf-8") as f: json.dump(rules, f, indent=4, ensure_ascii=False)
+    _sync_rules_to_icloud()
 
 def _existing_categories(rules):
     """提取已有的一级分类（去重），用于弹窗提示。"""
@@ -272,7 +292,7 @@ CATEGORY_MERGE_GAP_DEFAULT = 600
 def _merge_gap_for(category):
     return CATEGORY_MERGE_GAP.get(category, CATEGORY_MERGE_GAP_DEFAULT)
 
-STABILITY_TIMEOUT = 900        # 超过 15min 没活动 → 可以推送
+STABILITY_TIMEOUT = 300        # 超过 5min 没活动 → 可以推送
 LONG_SESSION_THRESHOLD = 3600  # 持续 1h+ → 立刻推送
 MAX_BUFFER_SIZE = 30           # 缓冲区上限
 
@@ -288,6 +308,7 @@ def _push_session(sess):
         int(sess['duration'] // 60), sess['start'], sess['end'])
 
 _WIDGET_EXPORT_LAST = None
+_RULES_SYNC_LAST = None
 BUFFER_DUMP_PATH = os.path.expanduser("~/.timecollectionlogger/buffer_dump.json")
 
 def _dump_buffer_for_widget(session_buffer):
@@ -308,7 +329,7 @@ def _export_widget_cache(session_buffer=None):
     """每次扫描周期刷新 widget JSON（但最多每 10 分钟一次）。"""
     global _WIDGET_EXPORT_LAST
     now = datetime.now(timezone.utc)
-    if _WIDGET_EXPORT_LAST and (now - _WIDGET_EXPORT_LAST).total_seconds() < 600:
+    if _WIDGET_EXPORT_LAST and (now - _WIDGET_EXPORT_LAST).total_seconds() < 180:
         if session_buffer:
             _dump_buffer_for_widget(session_buffer)
         return
@@ -498,6 +519,15 @@ def daemon_loop():
 
             save_state(now)
 
+            # 每 30 分钟从 Notion 同步规则（自动学习你手动改的分类）
+            global _RULES_SYNC_LAST
+            if _RULES_SYNC_LAST is None or (now - _RULES_SYNC_LAST).total_seconds() >= 1800:
+                try:
+                    cmd_sync_rules_from_notion()
+                    _RULES_SYNC_LAST = now
+                except Exception:
+                    pass
+
             # 每次扫描后刷新 widget 数据（含缓冲区未推送条目）
             try:
                 _export_widget_cache(session_buffer)
@@ -537,6 +567,46 @@ def cmd_delete_rule(pattern):
         del rules[k]
     save_rules(rules)
 
+def cmd_sync_rules_from_notion():
+    """从 Notion 数据库中提取每个 context 最新的分类，更新 rules.json。"""
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    headers = {"Authorization": f"Bearer {NOTION_API_KEY}", "Content-Type": "application/json", "Notion-Version": "2022-06-28"}
+    body = {"sorts": [{"property": "Time", "direction": "descending"}], "page_size": 100}
+
+    context_rules = {}
+    has_more = True
+    while has_more:
+        r = requests.post(url, headers=headers, json=body, timeout=15)
+        if r.status_code != 200:
+            print(f"查询失败: {r.status_code}")
+            return
+        data = r.json()
+        for page in data.get("results", []):
+            props = page.get("properties", {})
+            name = _get_title(props.get("App/Task", {}))
+            cat = _get_select(props.get("Category", {}))
+            proj = _get_select(props.get("Project", {}))
+            if name and cat and cat not in ("IGNORE",) and name.lower() not in context_rules:
+                context_rules[name.lower()] = [cat, proj]
+        has_more = data.get("has_more", False)
+        if has_more:
+            body["start_cursor"] = data.get("next_cursor")
+
+    # 合并到现有规则（保留 IGNORE 条目和未出现的规则）
+    rules = load_rules()
+    for k, v in context_rules.items():
+        rules[k] = v
+    save_rules(rules)
+    print(f"从 Notion 同步了 {len(context_rules)} 条规则")
+
+def _get_title(prop):
+    title = prop.get("title", [])
+    return title[0].get("plain_text", "") if title else ""
+
+def _get_select(prop):
+    sel = prop.get("select")
+    return sel.get("name", "") if sel else ""
+
 def cmd_set_rule(context, category, project):
     rules = load_rules()
     rules[context.lower()] = [category.strip(), project.strip()]
@@ -555,16 +625,18 @@ if __name__ == "__main__":
         elif cmd == "--set-rule" and len(sys.argv) >= 5:
             cmd_set_rule(sys.argv[2], sys.argv[3], sys.argv[4])
         elif cmd == "--test-push" and len(sys.argv) >= 5:
-            # 测试推送: uv run aw_sync.py --test-push "name" cat proj mins
             from datetime import datetime, timezone
             now = datetime.now(timezone.utc)
             push_to_notion(sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]), now, now)
+        elif cmd == "--sync-rules-from-notion":
+            cmd_sync_rules_from_notion()
         else:
             print("用法:")
             print("  uv run aw_sync.py                     # 启动后台守护")
             print("  uv run aw_sync.py --list-rules        # 列出所有规则")
             print("  uv run aw_sync.py --delete-rule <关键词> # 删除匹配的规则")
             print("  uv run aw_sync.py --set-rule <上下文> <大类> <项目>  # 添加/修改规则")
+            print("  uv run aw_sync.py --sync-rules-from-notion  # 从 Notion 同步规则")
             print("  uv run aw_sync.py --test-push <名> <类> <项> <分钟>  # 测试推送")
     else:
         daemon_loop()

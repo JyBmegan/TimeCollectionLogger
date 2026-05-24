@@ -4,8 +4,6 @@ import AppKit
 private let hourStart = 8
 private let hourEnd = 27
 private let totalHours = hourEnd - hourStart
-private let hourHeight: CGFloat = 50
-private let colW: CGFloat = 106
 private let blockFontSize: CGFloat = 11
 
 private let dayFmt: DateFormatter = {
@@ -19,11 +17,13 @@ struct TimelineView: View {
     let data: WidgetData?
 
     var body: some View {
-        VStack(spacing: 0) {
-            if let data = data {
-                // 本周 7 天，昨天留空，只显示今天
-                let days = buildDays(from: data.weekStart)
+        if let data = data {
+            GeometryReader { geo in
+                let colW: CGFloat = max(60, (geo.size.width - 40) / 7 - 4)
+                let hourH: CGFloat = max(28, (geo.size.height - 60) / CGFloat(totalHours))
+
                 let byDay = buildFilteredDict(data.entries)
+                let days = buildDays(from: data.weekStart)
 
                 HStack(alignment: .top, spacing: 4) {
                     VStack(alignment: .trailing, spacing: 0) {
@@ -33,38 +33,31 @@ struct TimelineView: View {
                             Text(String(format: "%02d:00", d))
                                 .font(.system(size: 10, weight: .medium, design: .monospaced))
                                 .foregroundColor(.white.opacity(0.55))
-                                .frame(height: hourHeight, alignment: .top)
+                                .frame(height: hourH, alignment: .top)
                         }
                     }
                     .frame(width: 34)
                     .padding(.trailing, 4)
 
                     ForEach(days, id: \.self) { day in
-                        DayColumn(date: day, entries: byDay[day] ?? [])
-                            .frame(width: colW)
+                        DayColumn(date: day, entries: byDay[day] ?? [],
+                                  colW: colW, hourHeight: hourH)
                     }
                 }
-                .frame(height: CGFloat(totalHours) * hourHeight + 26)
-            } else {
-                Text("加载中...")
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.4))
+                .frame(height: CGFloat(totalHours) * hourH + 32)
             }
+        } else {
+            Text("加载中...")
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.4))
         }
-        .padding(10)
-        .background(Color.black.opacity(0.22))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .padding(6)
-        .frame(width: 7 * colW + 86, height: CGFloat(totalHours) * hourHeight + 78)
     }
 
     private func buildFilteredDict(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {
-        let todayKey = dayFmt.string(from: Date())
         let cleaned = entries.filter { $0.durationMin >= 3 }.map(cleanEntry)
         let allByDay = groupByDay(cleaned)
-        // 只保留今天及之后，丢弃昨天碎片
         var result: [String: [TimeEntry]] = [:]
-        for (day, dayEntries) in allByDay where day >= todayKey {
+        for (day, dayEntries) in allByDay {
             result[day] = mergeAdjacent(dayEntries)
         }
         return result
@@ -76,8 +69,7 @@ struct TimelineView: View {
             if name.hasPrefix(p) { name = String(name.dropFirst(p.count)) }
         }
         return TimeEntry(category: e.category, project: e.project,
-                         start: e.start, end: e.end, name: name,
-                         durationMin: e.durationMin)
+                         start: e.start, end: e.end, name: name, durationMin: e.durationMin)
     }
 
     private func buildDays(from ws: String) -> [String] {
@@ -100,9 +92,9 @@ struct TimelineView: View {
 
     private func mergeGap(for category: String) -> TimeInterval {
         switch category {
-        case "Research", "Exploration", "Work": return 1800   // 30min
-        case "Entertainment", "Entertainmen", "Web": return 300 // 5min
-        default: return 600  // 10min
+        case "Research", "Exploration", "Work": return 1800
+        case "Entertainment", "Entertainmen", "Web": return 300
+        default: return 600
         }
     }
 
@@ -115,22 +107,18 @@ struct TimelineView: View {
         var merged: [TimeEntry] = []
         for e in sorted {
             var found = false
-            // 检查所有已合并条目（不只是最后一条），同 category+project 在合并窗口内即合并
             for i in merged.indices.reversed() {
                 let prev = merged[i]
-                guard prev.category == e.category,
-                      prev.project == e.project,
+                guard prev.category == e.category, prev.project == e.project,
                       let prevEnd = iso.date(from: prev.end),
                       let thisStart = iso.date(from: e.start),
                       thisStart.timeIntervalSince(prevEnd) < mergeGap(for: e.category)
                 else { continue }
-                merged[i] = TimeEntry(
-                    category: prev.category, project: prev.project,
+                merged[i] = TimeEntry(category: prev.category, project: prev.project,
                     start: prev.start, end: maxIso(prev.end, e.end),
                     name: prev.name.count >= e.name.count ? prev.name : e.name,
                     durationMin: prev.durationMin + e.durationMin)
-                found = true
-                break
+                found = true; break
             }
             if !found { merged.append(e) }
         }
@@ -150,6 +138,12 @@ struct TimelineView: View {
 struct DayColumn: View {
     let date: String
     let entries: [TimeEntry]
+    let colW: CGFloat
+    let hourHeight: CGFloat
+
+    private var isToday: Bool {
+        return date == dayFmt.string(from: Date())
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -165,11 +159,15 @@ struct DayColumn: View {
                     }
                 }
 
-                let groups = overlapGroups(entries)
-                ForEach(0..<groups.count, id: \.self) { gi in
-                    let group = groups[gi]
-                    ForEach(0..<group.count, id: \.self) { ei in
-                        TimeBlockView(entry: group[ei], groupCount: group.count, groupIndex: ei)
+                let slices = buildTimeSlices(entries)
+                ForEach(0..<slices.count, id: \.self) { i in
+                    let sl = slices[i]
+                    ForEach(0..<sl.entries.count, id: \.self) { j in
+                        TimeBlockView(entry: sl.entries[j],
+                                      groupCount: sl.entries.count,
+                                      groupIndex: j,
+                                      colW: colW, hourHeight: hourHeight,
+                                      sliceStart: sl.start, sliceEnd: sl.end)
                     }
                 }
             }
@@ -177,42 +175,39 @@ struct DayColumn: View {
         }
     }
 
-    private func overlapGroups(_ entries: [TimeEntry]) -> [[TimeEntry]] {
+    struct TimeSlice { let start: String; let end: String; let entries: [TimeEntry] }
+
+    private func buildTimeSlices(_ entries: [TimeEntry]) -> [TimeSlice] {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let sorted = entries.sorted { a, _ in
-            (iso.date(from: a.start) ?? Date.distantPast) < (iso.date(from: a.start) ?? Date.distantPast)
+        guard !entries.isEmpty else { return [] }
+        var points = Set<String>()
+        for e in entries { points.insert(e.start); points.insert(e.end) }
+        let sorted = points.sorted { a, b in
+            (iso.date(from: a) ?? Date.distantPast) < (iso.date(from: b) ?? Date.distantPast)
         }
-        var groups: [[TimeEntry]] = []
-        var ranges: [(Date, Date)] = []  // 每组的时间覆盖范围
-        for e in sorted {
-            guard let s = iso.date(from: e.start),
-                  let ed = iso.date(from: e.end) else {
-                groups.append([e]); ranges.append((Date.distantPast, Date.distantFuture)); continue
+        var slices: [TimeSlice] = []
+        for i in 0..<(sorted.count - 1) {
+            let t1 = sorted[i], t2 = sorted[i+1]
+            guard let d1 = iso.date(from: t1), let d2 = iso.date(from: t2), d2 > d1 else { continue }
+            let active = entries.filter { e in
+                guard let es = iso.date(from: e.start), let ee = iso.date(from: e.end) else { return false }
+                return es <= d1 && ee >= d2
             }
-            var placed = false
-            for i in 0..<groups.count {
-                let (gS, gE) = ranges[i]
-                if s < gE && ed > gS {  // 与组范围有重叠
-                    groups[i].append(e)
-                    ranges[i] = (min(gS, s), max(gE, ed))
-                    placed = true; break
-                }
+            if !active.isEmpty {
+                slices.append(TimeSlice(start: t1, end: t2, entries: active))
             }
-            if !placed { groups.append([e]); ranges.append((s, ed)) }
         }
-        return groups
+        return slices
     }
 
     private var dayHeaderView: some View {
         guard let d = dayFmt.date(from: date) else { return AnyView(Text(date)) }
         let en = Locale(identifier: "en_US")
         let df = DateFormatter(); df.locale = en; df.dateFormat = "EEE M/d"
-        let dn = df.string(from: d)
-
         return AnyView(
-            Text(dn)
-                .font(.system(size: 13, weight: .semibold))
+            Text(df.string(from: d))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.white.opacity(0.85))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
@@ -228,10 +223,14 @@ struct TimeBlockView: View {
     let entry: TimeEntry
     let groupCount: Int
     let groupIndex: Int
+    let colW: CGFloat
+    let hourHeight: CGFloat
+    let sliceStart: String
+    let sliceEnd: String
 
     var body: some View {
-        let (y, h) = layout()
-        let blockH = max(h - 1, 14)
+        let (y, h) = sliceLayout()
+        let blockH = max(h - 1, 10)
         let subW = (colW - 2) / CGFloat(groupCount)
         let xOff = CGFloat(groupIndex) * subW + 1
 
@@ -239,26 +238,26 @@ struct TimeBlockView: View {
             NSWorkspace.shared.open(URL(string: "https://www.notion.so/36679f2dabbc8034b450e66d5596cc22")!)
         }) {
             Text(entry.project)
-                .font(.system(size: blockFontSize, weight: .semibold))
+                .font(.system(size: min(blockFontSize, colW / 9), weight: .semibold))
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.6)
                 .foregroundColor(.white)
                 .padding(.horizontal, 3)
                 .padding(.vertical, 2)
                 .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
-                .background(morandiColor(entry.category))
+                .background(blockColor(entry.category))
                 .cornerRadius(3)
         }
         .buttonStyle(.plain)
         .offset(x: xOff, y: y)
     }
 
-    private func layout() -> (CGFloat, CGFloat) {
+    private func sliceLayout() -> (CGFloat, CGFloat) {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let s = iso.date(from: entry.start),
-              let ed = iso.date(from: entry.end) else { return (120, 30) }
+        guard let s = iso.date(from: sliceStart),
+              let ed = iso.date(from: sliceEnd) else { return (0, 10) }
         let cal = Calendar.current
         let sh = CGFloat(cal.component(.hour, from: s))
         let sm = CGFloat(cal.component(.minute, from: s))
@@ -269,21 +268,21 @@ struct TimeBlockView: View {
         var bot = ((eh - startH) * 60 + em) / 60 * hourHeight
         if sh < startH { top += 24 * hourHeight }
         if eh < startH { bot += 24 * hourHeight }
-        return (max(0, top), max(10, bot - top))
+        return (max(0, top), max(8, bot - top))
     }
 }
 
-// MARK: - 莫兰迪色系
+// MARK: - 配色
 
-func morandiColor(_ cat: String) -> Color {
+func blockColor(_ cat: String) -> Color {
     switch cat {
     case "Research":       return Color(red: 0.38, green: 0.50, blue: 0.72).opacity(0.70)
     case "Exploration":    return Color(red: 0.55, green: 0.45, blue: 0.70).opacity(0.70)
     case "Work":           return Color(red: 0.56, green: 0.68, blue: 0.54).opacity(0.70)
     case "Entertainment":  return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
     case "Entertainmen":   return Color(red: 0.76, green: 0.58, blue: 0.58).opacity(0.70)
-    case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.40)
-    case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.35)
-    default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.35)
+    case "Web":            return Color(red: 0.68, green: 0.64, blue: 0.62).opacity(0.60)
+    case "Offline":        return Color(red: 0.58, green: 0.58, blue: 0.58).opacity(0.45)
+    default:               return Color(red: 0.72, green: 0.68, blue: 0.72).opacity(0.45)
     }
 }

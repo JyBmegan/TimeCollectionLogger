@@ -72,12 +72,7 @@ class DataLoader: ObservableObject {
             weekStart = d.weekStart
         }
 
-        // 2. 合并今天缓冲区未推送数据
-        if let buf = _loadBuffer() {
-            entries += buf.entries
-        }
-
-        // 3. 如果 weekStart 为空（Notion 未同步），用当前周一
+        // 2. 如果 weekStart 为空（Notion 未同步），用当前周一
         if weekStart.isEmpty {
             let cal = Calendar.current
             let today = Date()

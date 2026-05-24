@@ -1,43 +1,55 @@
 {
-    "qq": [
-        "Entertainment",
-        "QQ"
+    "vscode: timecollectionlogger": [
+        "Exploration",
+        "TimeLogger"
     ],
-    "系统事件": [
-        "IGNORE",
-        "IGNORE"
+    "notion: time flow | data": [
+        "Exploration",
+        "TimeLogger"
     ],
-    "trustagent": [
-        "IGNORE",
-        "IGNORE"
+    "gemini: 本地部署 claude code 指南": [
+        "Exploration",
+        "TimeLogger"
+    ],
+    "vscode: jybmegan.github.io": [
+        "Exploration",
+        "PersonalWebsite"
     ],
     "vscode: eegdataanalysis": [
         "Research",
         "BrainMU"
     ],
-    "终端": [
-        "IGNORE",
-        "IGNORE"
-    ],
     "vscode: data": [
         "Research",
         "BrainMU"
     ],
-    "飞书": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "微信": [
-        "Entertainment",
-        "WeChat"
-    ],
-    "vscode: cuihu]": [
+    "vscode: brainmu": [
         "Research",
         "BrainMU"
     ],
-    "vscode: unnamed": [
-        "IGNORE",
-        "IGNORE"
+    "microsoft excel: treebankpapers_metadata": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: treebankpapers_survey": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: treebankpapers_benchmark": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: seeddvpapers_survey": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: seeddvpapers_benchmark": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: seeddvpapers_feishutables": [
+        "Research",
+        "BrainMU"
     ],
     "microsoft excel: annotation": [
         "Research",
@@ -47,15 +59,119 @@
         "Research",
         "BrainMU"
     ],
-    "备忘录": [
+    "vscode: preemption": [
+        "Research",
+        "ViewPointPreemption"
+    ],
+    "qq": [
+        "Entertainment",
+        "QQ"
+    ],
+    "微信": [
+        "Entertainment",
+        "WeChat"
+    ],
+    "web: feishu.cn": [
+        "Research",
+        "BrainMU"
+    ],
+    "web: ieee.org": [
+        "Research",
+        "BrainMU"
+    ],
+    "web: qq.com": [
+        "Web",
+        "qq.com"
+    ],
+    "web: google.com": [
+        "Web",
+        "google.com"
+    ],
+    "web: arxiv.org": [
+        "Web",
+        "arxiv.org"
+    ],
+    "web: sciencedirect.com": [
+        "Web",
+        "sciencedirect.com"
+    ],
+    "web: nature.com": [
+        "Web",
+        "nature.com"
+    ],
+    "web: acm.org": [
+        "Web",
+        "acm.org"
+    ],
+    "web: iop.org": [
+        "Web",
+        "iop.org"
+    ],
+    "web: the-innovation.org": [
+        "Web",
+        "the-innovation.org"
+    ],
+    "web: sci-hub.st": [
+        "Web",
+        "sci-hub.st"
+    ],
+    "web: biorxiv.org": [
+        "Web",
+        "biorxiv.org"
+    ],
+    "web: openreview.net": [
+        "Web",
+        "openreview.net"
+    ],
+    "web: elsevier.com": [
+        "Web",
+        "elsevier.com"
+    ],
+    "web: nih.gov": [
+        "Web",
+        "nih.gov"
+    ],
+    "web: openathens.net": [
+        "Web",
+        "openathens.net"
+    ],
+    "web: newtab": [
+        "Web",
+        "newtab"
+    ],
+    "web: github.com": [
+        "Web",
+        "github.com"
+    ],
+    "web: github.io": [
+        "Web",
+        "github.io"
+    ],
+    "web: 8.184:5244": [
+        "Web",
+        "8.184:5244"
+    ],
+    "系统事件": [
         "IGNORE",
         "IGNORE"
     ],
-    "vscode: timecollectionlogger": [
-        "Research",
-        "TimeCollectionLogger"
+    "系统设置": [
+        "IGNORE",
+        "IGNORE"
     ],
-    "notion: time flow": [
+    "trustagent": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "终端": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "飞书": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "备忘录": [
         "IGNORE",
         "IGNORE"
     ],
@@ -71,19 +187,11 @@
         "IGNORE",
         "IGNORE"
     ],
-    "lark helper": [
-        "IGNORE",
-        "IGNORE"
-    ],
     "lark": [
         "IGNORE",
         "IGNORE"
     ],
-    "系统设置": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "zoom.us": [
+    "lark helper": [
         "IGNORE",
         "IGNORE"
     ],
@@ -91,80 +199,40 @@
         "IGNORE",
         "IGNORE"
     ],
-    "vscode: brainmu": [
-        "Research",
-        "BrainMU"
+    "zoom.us": [
+        "IGNORE",
+        "IGNORE"
     ],
     "timewidget": [
         "IGNORE",
         "IGNORE"
     ],
-    "web: qq.com": [
-        "Web",
-        "qq.com"
-    ],
-    "vscode: preemption": [
-        "Research",
-        "ViewPointPreemption"
-    ],
-    "web: feishu.cn": [
-        "Web",
-        "feishu.cn"
-    ],
-    "web: google.com": [
-        "Web",
-        "google.com"
-    ],
-    "web: arxiv.org": [
-        "Web",
-        "arxiv.org"
-    ],
-    "web: sciencedirect.com": [
-        "Web",
-        "sciencedirect.com"
-    ],
-    "web: openathens.net": [
-        "Web",
-        "openathens.net"
-    ],
-    "web: nih.gov": [
-        "Web",
-        "nih.gov"
-    ],
-    "web: elsevier.com": [
-        "Web",
-        "elsevier.com"
+    "notion: time flow": [
+        "IGNORE",
+        "IGNORE"
     ],
     "notion: time flow | table": [
-        "Research",
-        "TimeCollectionLogger"
-    ],
-    "microsoft excel: treebankpapers_metadata": [
-        "Research",
-        "BrainMU"
-    ],
-    "notion: time flow | data": [
-        "Research",
-        "TimeLogger"
-    ],
-    "web: 8.184:5244": [
-        "Web",
-        "8.184:5244"
-    ],
-    "microsoft excel: treebankpapers_survey": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: treebankpapers_benchmark": [
-        "Research",
-        "BrainMU"
+        "IGNORE",
+        "IGNORE"
     ],
     "notion: time flow | chart": [
-        "Uncategorized",
-        "Pending"
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: unnamed": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: cuihu]": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini": [
+        "IGNORE",
+        "IGNORE"
     ],
     "microsoft excel: 本科生：团支部团员党员发展记录表": [
-        "Uncategorized",
-        "Pending"
+        "IGNORE",
+        "IGNORE"
     ]
 }
