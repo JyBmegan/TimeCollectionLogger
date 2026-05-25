@@ -38,6 +38,7 @@ def push_to_notion(app_name, duration_minutes):
     }
 
     # 3. 发送加密请求并返回结果
+    
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         print(f"✅ 记录成功！[{app_name}] 专注了 {duration_minutes} 分钟，已安全同步至 Notion。")

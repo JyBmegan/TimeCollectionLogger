@@ -204,8 +204,8 @@
         "IGNORE"
     ],
     "timewidget": [
-        "IGNORE",
-        "IGNORE"
+        "Uncategorized",
+        "Pending"
     ],
     "notion: time flow": [
         "IGNORE",
@@ -246,5 +246,41 @@
     "microsoft word: 文档3": [
         "Trivia",
         "Dangyuan"
+    ],
+    "steam helper": [
+        "Entertainment",
+        "Steam"
+    ],
+    "paradox launcher": [
+        "Entertainment",
+        "EU4"
+    ],
+    "bg3": [
+        "Entertainment",
+        "BG3"
+    ],
+    "numbers表格": [
+        "Uncategorized",
+        "Pending"
+    ],
+    "web: edu.cn": [
+        "Web",
+        "edu.cn"
+    ],
+    "vscode: danmaku-viewpoint-preemption": [
+        "Research",
+        "DanmakuView"
+    ],
+    "microsoft excel: 内容区域": [
+        "Uncategorized",
+        "Pending"
+    ],
+    "web: deepseek.com": [
+        "Web",
+        "deepseek.com"
+    ],
+    "web: nips.cc": [
+        "Web",
+        "nips.cc"
     ]
 }

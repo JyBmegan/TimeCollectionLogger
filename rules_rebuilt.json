@@ -1,0 +1,26 @@
+{
+    "gemini: 本地部署 claude code 指南": [
+        "Exploration",
+        "TimeLogger"
+    ],
+    "vscode: timecollectionlogger": [
+        "Exploration",
+        "TimeLogger"
+    ],
+    "web: feishu.cn": [
+        "Research",
+        "BrainMU"
+    ],
+    "vscode: eegdataanalysis": [
+        "Research",
+        "BrainMU"
+    ],
+    "web: ieee.org": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft excel: treebankpapers_metadata": [
+        "Research",
+        "BrainMU"
+    ]
+}

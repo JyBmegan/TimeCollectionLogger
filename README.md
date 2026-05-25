@@ -120,21 +120,47 @@ launchctl load ~/Library/LaunchAgents/com.timecollectionlogger.plist
 
 | Data | How |
 |---|---|
-| **Notion entries** | Cloud — both Macs read/write the same Notion database |
+| **Notion entries** | Cloud — all Macs read/write the same Notion database. Edit from any device, changes appear everywhere. |
 | **Classification rules** | iCloud Drive — symlinked rules.json shared between Macs |
-| **Widget display** | Reads from Notion (exported every 3 min), same on both Macs |
-| **Notion manual edits** | Instant in Notion web → desktop widget picks up within ~3 min |
+| **Widget display** | Reads from Notion (refreshed every ~3 min), same on both Macs |
 
-## What Needs Manual Sync
+## Managing Entries
 
-| Item | How |
-|---|---|
-| **Code updates** | `git pull` on both Macs, then rebuild Widget (`bash build.sh`) |
-| **ActivityWatch data** | Each Mac records independently; data is local, not synced |
+All changes are made in Notion and sync across every Mac automatically.
 
----
+### Edit an entry (category / project / name)
 
-## Daily Usage
+Open Notion → edit the cell directly. Widget picks up changes within ~3 min.
+Daemon also learns from your edits every 30 min to improve future auto-classification.
+
+### Delete an entry
+
+**Important:** Notion's "Delete" only moves items to Trash — the API still sees them, so the desktop widget won't remove them.
+
+Two ways to fully delete:
+
+```bash
+# Option A: Delete in Notion, then empty Trash (Notion sidebar → Trash → Empty)
+# Option B: Archive via API (single command)
+uv run aw_sync.py --delete-from-notion "关键词"
+```
+
+### Ignore an app entirely
+
+```bash
+uv run aw_sync.py --set-rule "应用名" "IGNORE" "IGNORE"
+```
+
+### Classification rules
+
+```bash
+uv run aw_sync.py --list-rules                # See all rules
+uv run aw_sync.py --set-rule "微信" "Entertainment" "WeChat"
+uv run aw_sync.py --delete-rule "zoom.us"     # Force re-classify next time
+uv run aw_sync.py --sync-rules-from-notion    # Learn from manual edits in Notion
+```
+
+### Daemon control
 
 ```bash
 bash tcl.sh status   # Check if daemon is running
@@ -142,12 +168,14 @@ bash tcl.sh logs     # Watch live daemon logs
 bash tcl.sh restart  # Restart after code changes
 ```
 
-Classification rules:
-```bash
-uv run aw_sync.py --list-rules                # See all rules
-uv run aw_sync.py --set-rule "微信" "Entertainment" "WeChat"
-uv run aw_sync.py --delete-rule "zoom.us"     # Force re-classify next time
-```
+---
+
+## What Needs Manual Sync
+
+| Item | How |
+|---|---|
+| **Code updates** | `git pull` on both Macs, then rebuild Widget (`bash build.sh`) |
+| **ActivityWatch data** | Each Mac records independently; data is local, not synced |
 
 ## Troubleshooting
 

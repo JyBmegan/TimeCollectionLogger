@@ -101,15 +101,23 @@ def ask_mac_dialog(title, prompt, default_ans=""):
         return subprocess.check_output(['osascript', '-e', applescript], text=True, stderr=subprocess.DEVNULL).strip()
     except: return "TIMEOUT"
 
+def _run_osascript(script):
+    try:
+        result = subprocess.check_output(
+            ['osascript', '-e', script], text=True, stderr=subprocess.DEVNULL).strip()
+        return result
+    except:
+        return None
+
 def ask_classification_dialog(context_name, rules):
     """两步分类弹窗：先选大类，再选/输该项目名（只展示该大类下的已有项目）。"""
-    # 1. 选大类
     cats = sorted(set(v[0] for v in rules.values()
                      if v[0] not in ("IGNORE", "Uncategorized")))
     cats_for_list = '", "'.join(cats)
     cats_for_list = f'"新建...", "{cats_for_list}"' if cats else '"新建..."'
 
-    applescript = f'''
+    # 第一步：选大类
+    step1 = f'''
     tell application "System Events"
         activate
         set catList to {{{cats_for_list}}}
@@ -121,52 +129,64 @@ def ask_classification_dialog(context_name, rules):
             if button returned of catDialog is "取消" then return "CANCEL"
             set chosenCat to text returned of catDialog
         end if
+        return chosenCat
+    end tell
     '''
+    chosenCat = _run_osascript(step1)
+    if chosenCat is None or chosenCat == "CANCEL":
+        return "TIMEOUT"
 
-    # 2. 选/输入项目名（只展示该大类下的已有项目）
+    # 第二步：选/输入项目名（只展示该大类下的已有项目）
+    safe_cat = chosenCat.replace('"', "'")
     projs = sorted(set(v[1] for v in rules.values()
                        if v[0] == chosenCat and v[1] not in ("IGNORE", "Uncategorized", "Pending")))
     if projs:
         proj_list = '", "'.join(projs)
-        applescript += f'''
-        set projList to {{"新建...", "{proj_list}"}}
-        set projChoice to choose from list projList with title "{chosenCat} 下的项目" with prompt "选择项目（或选「新建...」）"
-        if projChoice is false then return chosenCat & "/CANCEL"
-        set chosenProj to item 1 of projChoice
-        if chosenProj is "新建..." then
-            set projDialog to display dialog "大类: " & chosenCat & return & "输入新项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "新建项目"
+        step2 = f'''
+        tell application "System Events"
+            activate
+            set chosenCat to "{safe_cat}"
+            set projList to {{"新建...", "{proj_list}"}}
+            set projChoice to choose from list projList with title "{safe_cat} 下的项目" with prompt "选择项目（或选「新建...」）"
+            if projChoice is false then return chosenCat & "/CANCEL"
+            set chosenProj to item 1 of projChoice
+            if chosenProj is "新建..." then
+                set projDialog to display dialog "大类: " & chosenCat & return & "输入新项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "新建项目"
+                if button returned of projDialog is "忽略" then return chosenCat & "/IGNORE"
+                return chosenCat & "/" & (text returned of projDialog)
+            end if
+            return chosenCat & "/" & chosenProj
+        end tell
+        '''
+    else:
+        step2 = f'''
+        tell application "System Events"
+            activate
+            set chosenCat to "{safe_cat}"
+            set projDialog to display dialog "大类: " & chosenCat & return & "输入项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "新建项目"
             if button returned of projDialog is "忽略" then return chosenCat & "/IGNORE"
             return chosenCat & "/" & (text returned of projDialog)
-        end if
-        return chosenCat & "/" & chosenProj
-    end tell
-    '''
-    else:
-        applescript += f'''
-        set projDialog to display dialog "大类: " & chosenCat & return & "输入项目名:" default answer "" buttons {{"忽略", "确定"}} default button "确定" with title "新建项目"
-        if button returned of projDialog is "忽略" then return chosenCat & "/IGNORE"
-        return chosenCat & "/" & (text returned of projDialog)
-    end tell
-    '''
-
-    try:
-        result = subprocess.check_output(
-            ['osascript', '-e', applescript], text=True, stderr=subprocess.DEVNULL).strip()
-        if result == "CANCEL" or result.endswith("/CANCEL"):
-            return "TIMEOUT"
-        return result
-    except:
+        end tell
+        '''
+    result = _run_osascript(step2)
+    if result is None or result == "CANCEL" or (result and result.endswith("/CANCEL")):
         return "TIMEOUT"
+    return result
 
 def parse_vscode_project(title):
     match = re.search(r'[—\-]\s*(.*?)\s*(?:\[SSH:|\(Workspace\))', title)
-    if match: return match.group(1).strip() 
-    parts = re.split(r'[—\-]', title)
+    if match: return match.group(1).strip()
+    # 用 " - " / " — " 分隔（项目名可能含连字符）
+    parts = re.split(r'\s+[—\-]\s+', title)
     if len(parts) > 1:
+        # 末段通常是 "Visual Studio Code"，倒数第二段才是项目名
+        if 'Visual Studio Code' in parts[-1] and len(parts) >= 2:
+            proj = parts[-2].strip()
+            if proj: return proj
         proj = parts[-1].replace("Visual Studio Code", "").strip()
         if proj: return proj
-    clean_title = title.replace("Visual Studio Code", "").strip()
-    return clean_title if clean_title else "Unnamed"
+    clean = title.replace("Visual Studio Code", "").strip().rstrip('—').rstrip('-').strip()
+    return clean if clean else "Unnamed"
 
 def extract_context_identifier(app, title, url):
     if app in CONTAINER_APPS["browsers"]:
@@ -636,6 +656,40 @@ def cmd_set_rule(context, category, project):
     save_rules(rules)
     print(f"已更新: {context} → {category} / {project}")
 
+def cmd_delete_from_notion(keyword):
+    """归档 Notion 中匹配关键词的条目（关键词匹配 App/Task 标题）。"""
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    headers = {"Authorization": f"Bearer {NOTION_API_KEY}", "Content-Type": "application/json", "Notion-Version": "2022-06-28"}
+    body = {"page_size": 100}
+    keyword_lower = keyword.lower()
+    archived = 0
+    has_more = True
+    while has_more:
+        resp = requests.post(url, headers=headers, json=body, timeout=15)
+        if resp.status_code != 200:
+            print(f"查询失败: {resp.status_code}")
+            return
+        data = resp.json()
+        for page in data.get("results", []):
+            props = page.get("properties", {})
+            name = _get_title(props.get("App/Task", {}))
+            if keyword_lower in name.lower():
+                del_resp = requests.patch(
+                    f"https://api.notion.com/v1/pages/{page['id']}",
+                    headers=headers,
+                    json={"archived": True, "properties": {}},
+                    timeout=10)
+                if del_resp.status_code == 200:
+                    print(f"  已归档: {name}")
+                    archived += 1
+        has_more = data.get("has_more", False)
+        if has_more:
+            body["start_cursor"] = data.get("next_cursor")
+    print(f"共归档 {archived} 条匹配「{keyword}」的记录。")
+    if archived > 0:
+        print("提示：下次 widget 刷新后桌面即消失。")
+
+
 if __name__ == "__main__":
     import sys
     sys.stdout.reconfigure(line_buffering=True)  # launchd 后台模式实时写日志
@@ -647,6 +701,8 @@ if __name__ == "__main__":
             cmd_delete_rule(sys.argv[2])
         elif cmd == "--set-rule" and len(sys.argv) >= 5:
             cmd_set_rule(sys.argv[2], sys.argv[3], sys.argv[4])
+        elif cmd == "--delete-from-notion" and len(sys.argv) >= 3:
+            cmd_delete_from_notion(sys.argv[2])
         elif cmd == "--test-push" and len(sys.argv) >= 5:
             from datetime import datetime, timezone
             now = datetime.now(timezone.utc)
@@ -659,6 +715,7 @@ if __name__ == "__main__":
             print("  uv run aw_sync.py --list-rules        # 列出所有规则")
             print("  uv run aw_sync.py --delete-rule <关键词> # 删除匹配的规则")
             print("  uv run aw_sync.py --set-rule <上下文> <大类> <项目>  # 添加/修改规则")
+            print("  uv run aw_sync.py --delete-from-notion <关键词>  # 归档 Notion 匹配条目")
             print("  uv run aw_sync.py --sync-rules-from-notion  # 从 Notion 同步规则")
             print("  uv run aw_sync.py --test-push <名> <类> <项> <分钟>  # 测试推送")
     else:
