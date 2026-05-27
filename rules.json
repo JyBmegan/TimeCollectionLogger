@@ -1,286 +1,422 @@
 {
-    "vscode: timecollectionlogger": [
-        "Exploration",
-        "TimeLogger"
-    ],
-    "notion: time flow | data": [
-        "Exploration",
-        "TimeLogger"
-    ],
-    "gemini: 本地部署 claude code 指南": [
-        "Exploration",
-        "TimeLogger"
-    ],
-    "vscode: jybmegan.github.io": [
-        "Exploration",
-        "PersonalWebsite"
-    ],
-    "vscode: eegdataanalysis": [
-        "Research",
-        "BrainMU"
-    ],
-    "vscode: data": [
-        "Research",
-        "BrainMU"
-    ],
-    "vscode: brainmu": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: treebankpapers_metadata": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: treebankpapers_survey": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: treebankpapers_benchmark": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: seeddvpapers_survey": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: seeddvpapers_benchmark": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: seeddvpapers_feishutables": [
-        "Research",
-        "BrainMU"
-    ],
-    "microsoft excel: annotation": [
-        "Research",
-        "BrainMU"
-    ],
-    "vscode: no-overlap.json — data": [
-        "Research",
-        "BrainMU"
-    ],
-    "vscode: preemption": [
-        "Research",
-        "ViewPointPreemption"
-    ],
-    "qq": [
-        "Entertainment",
-        "QQ"
-    ],
-    "微信": [
-        "Entertainment",
-        "WeChat"
-    ],
-    "web: feishu.cn": [
-        "Research",
-        "BrainMU"
-    ],
-    "web: ieee.org": [
-        "Research",
-        "BrainMU"
-    ],
-    "web: qq.com": [
-        "Web",
-        "qq.com"
-    ],
-    "web: google.com": [
-        "Web",
-        "google.com"
-    ],
-    "web: arxiv.org": [
-        "Web",
-        "arxiv.org"
-    ],
-    "web: sciencedirect.com": [
-        "Web",
-        "sciencedirect.com"
-    ],
-    "web: nature.com": [
-        "Web",
-        "nature.com"
-    ],
-    "web: acm.org": [
-        "Web",
-        "acm.org"
-    ],
-    "web: iop.org": [
-        "Web",
-        "iop.org"
-    ],
-    "web: the-innovation.org": [
-        "Web",
-        "the-innovation.org"
-    ],
-    "web: sci-hub.st": [
-        "Web",
-        "sci-hub.st"
-    ],
-    "web: biorxiv.org": [
-        "Web",
-        "biorxiv.org"
-    ],
-    "web: openreview.net": [
-        "Web",
-        "openreview.net"
-    ],
-    "web: elsevier.com": [
-        "Web",
-        "elsevier.com"
-    ],
-    "web: nih.gov": [
-        "Web",
-        "nih.gov"
-    ],
-    "web: openathens.net": [
-        "Web",
-        "openathens.net"
-    ],
-    "web: newtab": [
-        "Web",
-        "newtab"
-    ],
-    "web: github.com": [
-        "Web",
-        "github.com"
-    ],
-    "web: github.io": [
-        "Web",
-        "github.io"
-    ],
-    "web: 8.184:5244": [
-        "Web",
-        "8.184:5244"
-    ],
-    "系统事件": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "系统设置": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "trustagent": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "终端": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "飞书": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "备忘录": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "访达": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "预览": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "网易邮箱大师": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "lark": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "lark helper": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "aurora slim": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "zoom.us": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "timewidget": [
-        "Uncategorized",
-        "Pending"
-    ],
-    "notion: time flow": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "notion: time flow | table": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "notion: time flow | chart": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "vscode: unnamed": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "vscode: cuihu]": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "gemini": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "microsoft excel: 本科生：团支部团员党员发展记录表": [
-        "IGNORE",
-        "IGNORE"
-    ],
-    "microsoft word: 包家瑜-01": [
-        "Trivia",
-        "Dangyuan"
-    ],
-    "gemini: 党员会议材料准备指南": [
-        "Trivia",
-        "Dangyuan"
-    ],
-    "microsoft word: 文档3": [
-        "Trivia",
-        "Dangyuan"
-    ],
-    "steam helper": [
-        "Entertainment",
-        "Steam"
-    ],
-    "paradox launcher": [
-        "Entertainment",
-        "EU4"
-    ],
-    "bg3": [
-        "Entertainment",
-        "BG3"
-    ],
-    "numbers表格": [
-        "Uncategorized",
-        "Pending"
-    ],
-    "web: edu.cn": [
-        "Web",
-        "edu.cn"
-    ],
-    "vscode: danmaku-viewpoint-preemption": [
-        "Research",
-        "DanmakuView"
-    ],
-    "microsoft excel: 内容区域": [
-        "Uncategorized",
-        "Pending"
-    ],
-    "web: deepseek.com": [
-        "Web",
-        "deepseek.com"
-    ],
-    "web: nips.cc": [
-        "Web",
-        "nips.cc"
-    ]
+  "vscode: timecollectionlogger": [
+    "Exploration",
+    "TimeLogger"
+  ],
+  "notion: time flow | data": [
+    "Exploration",
+    "TimeLogger"
+  ],
+  "gemini: 本地部署 claude code 指南": [
+    "Exploration",
+    "TimeLogger"
+  ],
+  "vscode: jybmegan.github.io": [
+    "Exploration",
+    "PersonalWebsite"
+  ],
+  "vscode: eegdataanalysis": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: data": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: brainmu": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: treebankpapers_metadata": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: treebankpapers_survey": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: treebankpapers_benchmark": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: seeddvpapers_survey": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: seeddvpapers_benchmark": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: seeddvpapers_feishutables": [
+    "Research",
+    "BrainMU"
+  ],
+  "microsoft excel: annotation": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: no-overlap.json — data": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: preemption": [
+    "Research",
+    "ViewPointPreemption"
+  ],
+  "qq": [
+    "Entertainment",
+    "QQ"
+  ],
+  "微信": [
+    "Entertainment",
+    "Wechat"
+  ],
+  "web: feishu.cn": [
+    "Research",
+    "BrainMU"
+  ],
+  "web: ieee.org": [
+    "Research",
+    "BrainMU"
+  ],
+  "web: qq.com": [
+    "Web",
+    "qq.com"
+  ],
+  "web: google.com": [
+    "Web",
+    "google.com"
+  ],
+  "web: arxiv.org": [
+    "Web",
+    "arxiv.org"
+  ],
+  "web: sciencedirect.com": [
+    "Web",
+    "sciencedirect.com"
+  ],
+  "web: nature.com": [
+    "Web",
+    "nature.com"
+  ],
+  "web: acm.org": [
+    "Web",
+    "acm.org"
+  ],
+  "web: iop.org": [
+    "Web",
+    "iop.org"
+  ],
+  "web: the-innovation.org": [
+    "Web",
+    "the-innovation.org"
+  ],
+  "web: sci-hub.st": [
+    "Web",
+    "sci-hub.st"
+  ],
+  "web: biorxiv.org": [
+    "Web",
+    "biorxiv.org"
+  ],
+  "web: openreview.net": [
+    "Web",
+    "openreview.net"
+  ],
+  "web: elsevier.com": [
+    "Web",
+    "elsevier.com"
+  ],
+  "web: nih.gov": [
+    "Web",
+    "nih.gov"
+  ],
+  "web: openathens.net": [
+    "Web",
+    "openathens.net"
+  ],
+  "web: newtab": [
+    "Web",
+    "newtab"
+  ],
+  "web: github.com": [
+    "Web",
+    "github.com"
+  ],
+  "web: github.io": [
+    "Web",
+    "github.io"
+  ],
+  "web: 8.184:5244": [
+    "Web",
+    "8.184:5244"
+  ],
+  "系统事件": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "系统设置": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "trustagent": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "终端": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "飞书": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "备忘录": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "访达": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "预览": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "网易邮箱大师": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "lark": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "lark helper": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "aurora slim": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "zoom.us": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "timewidget": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "notion: time flow": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "notion: time flow | table": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "notion: time flow | chart": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "vscode: unnamed": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "vscode: cuihu]": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "gemini": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "microsoft excel: 本科生：团支部团员党员发展记录表": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "microsoft word: 包家瑜-01": [
+    "Trivia",
+    "Dangyuan"
+  ],
+  "gemini: 党员会议材料准备指南": [
+    "Trivia",
+    "Dangyuan"
+  ],
+  "microsoft word: 文档3": [
+    "Trivia",
+    "Dangyuan"
+  ],
+  "steam helper": [
+    "Entertainment",
+    "Steam"
+  ],
+  "paradox launcher": [
+    "Entertainment",
+    "EU4"
+  ],
+  "bg3": [
+    "Entertainment",
+    "BG3"
+  ],
+  "numbers表格": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "web: edu.cn": [
+    "Web",
+    "edu.cn"
+  ],
+  "vscode: danmaku-viewpoint-preemption": [
+    "Research",
+    "DanmakuView"
+  ],
+  "microsoft excel: 内容区域": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "web: deepseek.com": [
+    "Web",
+    "deepseek.com"
+  ],
+  "web: nips.cc": [
+    "Web",
+    "nips.cc"
+  ],
+  "gemini: git 多设备同步与分支管理": [
+    "Web",
+    "AI Chat"
+  ],
+  "gemini: viewpoint preemption lab": [
+    "Research",
+    "ViewPointPreemption"
+  ],
+  "zotero": [
+    "Research",
+    "Paper"
+  ],
+  "web: braintreebank.dev": [
+    "Research",
+    "BrainMU"
+  ],
+  "chatgpt": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "chatgpt: 登录 - google 账号": [
+    "Web",
+    "AI Chat"
+  ],
+  "web: neuromatch.io": [
+    "Web",
+    "neuromatch.io"
+  ],
+  "gemini: 论文修改与审稿意见回应": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "chatgpt: 论文修改与审稿意见回应": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "microsoft word: 匿名正文ver2_0430": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "gemini: revising paper based on reviewer feedbac": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "chatgpt: revising paper based on reviewer feedbac": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "microsoft word: 查找": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "web: cell.com": [
+    "Web",
+    "cell.com"
+  ],
+  "web: crossref.org": [
+    "Web",
+    "crossref.org"
+  ],
+  "microsoft word: 文献综述_包家瑜": [
+    "Research",
+    "SE-AlexNet"
+  ],
+  "vscode: welcome": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "vscode: data (workspace) [ssh: jiayu-cuihu]": [
+    "Research",
+    "BrainMU"
+  ],
+  "deepseek: deepseek platform": [
+    "Web",
+    "AI Chat"
+  ],
+  "web: ac.cn": [
+    "Web",
+    "ac.cn"
+  ],
+  "哔哩哔哩": [
+    "Entertainment",
+    "Bilibili"
+  ],
+  "gemini: eu4 启动器问题解决方案": [
+    "Entertainment",
+    "EU4"
+  ],
+  "eu4": [
+    "Entertainment",
+    "EU4"
+  ],
+  "gemini: eeg 数据预处理与打包": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: walkthrough: swift": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "vscode: config": [
+    "IGNORE",
+    "IGNORE"
+  ],
+  "vscode: project": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: jiayubao": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: workspace — jiayubao": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: cuihunew": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: workspace — cuihunew": [
+    "Research",
+    "BrainMU"
+  ],
+  "vscode: cuihunew (workspace) [ssh: jiayu-cuihu-new]": [
+    "Research",
+    "BrainMU"
+  ],
+  "web: huggingface.co": [
+    "Web",
+    "huggingface.co"
+  ],
+  "网易云音乐": [
+    "Entertainment",
+    "Music"
+  ]
 }

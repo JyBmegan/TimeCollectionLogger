@@ -32,7 +32,7 @@ def _sync_rules_to_icloud():
         import shutil
         shutil.copy2(RULES_FILE, ICLOUD_RULES)
     except: pass
-IGNORE_LIST = ["System Settings", "Finder", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA"]
+IGNORE_LIST = ["System Settings", "Finder", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA", "TimeWidget"]
 
 CONTAINER_APPS = {
     "browsers": ["Google Chrome", "Safari", "Arc", "Edge"],
@@ -188,6 +188,18 @@ def parse_vscode_project(title):
     clean = title.replace("Visual Studio Code", "").strip().rstrip('—').rstrip('-').strip()
     return clean if clean else "Unnamed"
 
+def parse_office_document(title, app):
+    """从 Office 窗口标题提取文档名（类似 VSCode 提取项目名）"""
+    # 处理英文/中文破折号和连字符（macOS 用 —，Windows 用 -）
+    # 去掉末尾的 " — AppName" 或 " - AppName"
+    clean = re.sub(r'\s*[—\-]\s*' + re.escape(app) + r'\s*$', '', title)
+    # 也去掉不带分隔符的 app 名称
+    clean = clean.replace(app, '').strip()
+    # 去掉前后残留的标点
+    clean = clean.strip(' —-–    ').strip()
+    # 保留常见临时/无意义标题的原始值（后续仍需用户分类确认）
+    return clean if clean else None
+
 def extract_context_identifier(app, title, url):
     if app in CONTAINER_APPS["browsers"]:
         try:
@@ -216,8 +228,10 @@ def extract_context_identifier(app, title, url):
         if app == "Code": return f"VSCode: {parse_vscode_project(title)}"
         return f"{app}: {title[:20]}"
     elif app in CONTAINER_APPS["notes"] or app in CONTAINER_APPS["office"]:
-        clean_title = title.replace(f" - {app}", "").replace(app, "").strip()
-        return f"{app}: {clean_title[:25]}" if clean_title else f"{app}: 未命名"
+        clean_title = parse_office_document(title, app)
+        if clean_title:
+            return f"{app}: {clean_title[:40]}"
+        return f"{app}: 未命名"
     return app
 
 def push_to_notion(name, cat, proj, duration_mins, start_time, end_time):
@@ -496,6 +510,8 @@ def daemon_loop():
 
                 if found:
                     l1_cat, l2_proj = found
+                    if "Uncategorized" in (l1_cat, l2_proj) or l2_proj == "Pending":
+                        l1_cat, l2_proj = None, None  # 当作未分类，重新弹窗
                 elif context_name.startswith("Web: "):
                     # 普通网页自动归类，不弹窗
                     domain = context_name.replace("Web: ", "")
@@ -506,7 +522,7 @@ def daemon_loop():
                     # AI 对话平台 → 两步分类弹窗
                     res = ask_classification_dialog("AI: " + context_name, rules)
                     if res == "TIMEOUT" or res is None:
-                        l1_cat, l2_proj = "Web", "AI Chat"
+                        continue  # 未分类 = 不记录、不学规则
                     elif "/IGNORE" in res:
                         l1_cat, l2_proj = "IGNORE", "IGNORE"
                     else:
@@ -518,7 +534,7 @@ def daemon_loop():
                 else:
                     res = ask_classification_dialog(context_name, rules)
                     if res == "TIMEOUT" or res is None:
-                        l1_cat, l2_proj = "Uncategorized", "Pending"
+                        continue  # 未分类 = 不记录、不学规则
                     elif "/IGNORE" in res:
                         parts = res.split("/", 1)
                         l1_cat = parts[0].strip()
@@ -629,7 +645,7 @@ def cmd_sync_rules_from_notion():
             name = _get_title(props.get("App/Task", {}))
             cat = _get_select(props.get("Category", {}))
             proj = _get_select(props.get("Project", {}))
-            if name and cat and cat not in ("IGNORE",) and name.lower() not in context_rules:
+            if name and cat and cat not in ("IGNORE",) and proj not in ("IGNORE", "Pending") and "Uncategorized" not in (cat, proj) and name.lower() not in context_rules:
                 context_rules[name.lower()] = [cat, proj]
         has_more = data.get("has_more", False)
         if has_more:

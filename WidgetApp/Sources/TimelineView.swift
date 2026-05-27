@@ -230,7 +230,7 @@ struct TimeBlockView: View {
 
     var body: some View {
         let (y, h) = sliceLayout()
-        let blockH = max(h - 1, 10)
+        let blockH = max(h - 1, 2)
         let subW = (colW - 2) / CGFloat(groupCount)
         let xOff = CGFloat(groupIndex) * subW + 1
 
@@ -268,7 +268,7 @@ struct TimeBlockView: View {
         var bot = ((eh - startH) * 60 + em) / 60 * hourHeight
         if sh < startH { top += 24 * hourHeight }
         if eh < startH { bot += 24 * hourHeight }
-        return (max(0, top), max(8, bot - top))
+        return (max(0, top), max(0, bot - top))
     }
 }
 
