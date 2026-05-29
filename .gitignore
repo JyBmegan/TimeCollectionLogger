@@ -16,6 +16,9 @@ wheels/
 logs/
 state.json
 
+# Large model files (exceeds GitHub 100MB limit)
+MindCine_unet_fix/
+
 # Widget build artifacts
 WidgetApp/TimeWidget
 WidgetApp/TimeWidget.app

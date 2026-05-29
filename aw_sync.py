@@ -174,19 +174,32 @@ def ask_classification_dialog(context_name, rules):
     return result
 
 def parse_vscode_project(title):
-    match = re.search(r'[—\-]\s*(.*?)\s*(?:\[SSH:|\(Workspace\))', title)
-    if match: return match.group(1).strip()
-    # 用 " - " / " — " 分隔（项目名可能含连字符）
+    # 去掉脏文件标记 ● 和 SSH/Workspace 噪音
+    title = re.sub(r'^[●◉○]\s*', '', title)
+    title = re.sub(r'\s*\[SSH:\s*[^\]]+\]', '', title)
+    title = re.sub(r'\s*\(Workspace\)', '', title)
+
     parts = re.split(r'\s+[—\-]\s+', title)
-    if len(parts) > 1:
-        # 末段通常是 "Visual Studio Code"，倒数第二段才是项目名
-        if 'Visual Studio Code' in parts[-1] and len(parts) >= 2:
-            proj = parts[-2].strip()
-            if proj: return proj
-        proj = parts[-1].replace("Visual Studio Code", "").strip()
-        if proj: return proj
-    clean = title.replace("Visual Studio Code", "").strip().rstrip('—').rstrip('-').strip()
-    return clean if clean else "Unnamed"
+    # 去掉末尾的 "Visual Studio Code"
+    clean_parts = [p.strip() for p in parts if p.strip() and 'Visual Studio Code' not in p]
+
+    if not clean_parts:
+        return "Unnamed"
+
+    # workspace 是最后一段（文件夹/项目根目录名）
+    workspace = clean_parts[-1]
+
+    # 剩余部分是文件名/文件夹名（第一段 → 最后一段之前）
+    sub_parts = clean_parts[:-1]
+
+    # 如果有子文件夹，取最靠近 workspace 的那一级
+    if sub_parts:
+        folder = sub_parts[-1]
+        if '.' in folder and len(sub_parts) >= 2:
+            folder = sub_parts[-2]
+        return f"{workspace} / {folder}"
+
+    return workspace
 
 def parse_office_document(title, app):
     """从 Office 窗口标题提取文档名（类似 VSCode 提取项目名）"""
