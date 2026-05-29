@@ -15,42 +15,98 @@ private let dayFmt: DateFormatter = {
 
 struct TimelineView: View {
     let data: WidgetData?
+    let weekOffset: Int
+    let onPreviousWeek: () -> Void
+    let onNextWeek: () -> Void
+    let onResetToCurrentWeek: () -> Void
 
     var body: some View {
         if let data = data {
-            GeometryReader { geo in
-                let colW: CGFloat = max(60, (geo.size.width - 40) / 7 - 4)
-                let hourH: CGFloat = max(28, (geo.size.height - 60) / CGFloat(totalHours))
+            VStack(spacing: 0) {
+                // 周导航栏（细条，18px 高）
+                HStack(spacing: 0) {
+                    Button(action: onPreviousWeek) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 16, height: 16)
+                    .contentShape(Rectangle())
 
-                let byDay = buildFilteredDict(data.entries)
-                let days = buildDays(from: data.weekStart)
+                    Text(weekLabel)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.65))
+                        .frame(width: 130)
 
-                HStack(alignment: .top, spacing: 4) {
-                    VStack(alignment: .trailing, spacing: 0) {
-                        Color.clear.frame(height: 32)
-                        ForEach(hourStart..<hourEnd, id: \.self) { h in
-                            let d = h <= 24 ? h : h - 24
-                            Text(String(format: "%02d:00", d))
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.55))
-                                .frame(height: hourH, alignment: .top)
+                    Button(action: onNextWeek) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(weekOffset == 0 ? .white.opacity(0.15) : .white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 16, height: 16)
+                    .contentShape(Rectangle())
+                    .disabled(weekOffset == 0)
+
+                    Spacer()
+
+                    Button(action: onResetToCurrentWeek) {
+                        Text("Today")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .frame(height: 16)
+                    .contentShape(Rectangle())
+                }
+                .frame(height: 18)
+                .padding(.horizontal, 2)
+
+                // 时间线主体（填充剩余高度）
+                GeometryReader { geo in
+                    let colW: CGFloat = max(60, (geo.size.width - 40) / 7 - 4)
+                    let hourH: CGFloat = max(28, (geo.size.height - 60) / CGFloat(totalHours))
+
+                    let byDay = buildFilteredDict(data.entries)
+                    let days = buildDays(from: data.weekStart)
+
+                    HStack(alignment: .top, spacing: 4) {
+                        VStack(alignment: .trailing, spacing: 0) {
+                            Color.clear.frame(height: 32)
+                            ForEach(hourStart..<hourEnd, id: \.self) { h in
+                                let d = h <= 24 ? h : h - 24
+                                Text(String(format: "%02d:00", d))
+                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.55))
+                                    .frame(height: hourH, alignment: .top)
+                            }
+                        }
+                        .frame(width: 34)
+                        .padding(.trailing, 4)
+
+                        ForEach(days, id: \.self) { day in
+                            DayColumn(date: day, entries: byDay[day] ?? [],
+                                      colW: colW, hourHeight: hourH)
                         }
                     }
-                    .frame(width: 34)
-                    .padding(.trailing, 4)
-
-                    ForEach(days, id: \.self) { day in
-                        DayColumn(date: day, entries: byDay[day] ?? [],
-                                  colW: colW, hourHeight: hourH)
-                    }
+                    .frame(height: CGFloat(totalHours) * hourH + 32)
                 }
-                .frame(height: CGFloat(totalHours) * hourH + 32)
             }
         } else {
             Text("加载中...")
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.4))
         }
+    }
+
+    private var weekLabel: String {
+        guard let base = data?.weekStart, !base.isEmpty else { return "" }
+        let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
+        guard let monday = fmt.date(from: base) else { return "" }
+        let end = Calendar.current.date(byAdding: .day, value: 6, to: monday)!
+        let df = DateFormatter(); df.dateFormat = "MM/dd"
+        return "\(df.string(from: monday)) - \(df.string(from: end))"
     }
 
     private func buildFilteredDict(_ entries: [TimeEntry]) -> [String: [TimeEntry]] {

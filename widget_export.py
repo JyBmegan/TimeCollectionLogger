@@ -38,14 +38,26 @@ def _notion_post(url, body, max_retries=3):
                 raise
 
 
-def fetch_week_entries():
-    monday = get_monday()
+def fetch_week_entries(monday=None):
+    if monday is None:
+        monday = get_monday()
+    now = datetime.now(timezone.utc)
+    current_monday = get_monday()
+
+    filter_conditions = [
+        {"property": "Time", "date": {"on_or_after": monday.isoformat()}},
+    ]
+    # 如果是过去的一周，限制到该周周日，避免混入后续数据
+    if monday < current_monday:
+        sunday = monday + timedelta(days=6, hours=23, minutes=59, seconds=59)
+        filter_conditions.append(
+            {"property": "Time", "date": {"on_or_before": sunday.isoformat()}}
+        )
+
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
     body = {
         "filter": {
-            "and": [
-                {"property": "Time", "date": {"on_or_after": monday.isoformat()}},
-            ]
+            "and": filter_conditions,
         },
         "sorts": [{"property": "Time", "direction": "ascending"}],
         "page_size": 100,
@@ -108,9 +120,22 @@ def _get_date(prop):
 
 def main():
     os.makedirs(CACHE_DIR, exist_ok=True)
-    print("查询 Notion 本周数据...")
-    entries = fetch_week_entries()
-    monday = get_monday()
+
+    # 支持命令行指定周一日期：widget_export.py --monday 2026-05-18
+    monday = None
+    args = sys.argv[1:]
+    if len(args) >= 2 and args[0] == "--monday":
+        try:
+            monday = datetime.fromisoformat(args[1]).replace(tzinfo=timezone.utc)
+        except ValueError:
+            print(f"无效日期: {args[1]}")
+            sys.exit(1)
+
+    label = monday.strftime("%Y-%m-%d") if monday else "本周"
+    print(f"查询 Notion {label} 数据...")
+    entries = fetch_week_entries(monday=monday)
+    if monday is None:
+        monday = get_monday()
 
     output = {
         "updated": datetime.now(timezone.utc).isoformat(),

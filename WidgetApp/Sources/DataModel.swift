@@ -48,15 +48,21 @@ struct BufferDump: Codable {
 class DataLoader: ObservableObject {
     @Published var data: WidgetData?
     @Published var error: String?
+    @Published var weekOffset: Int = 0
 
     private let cachePath = NSHomeDirectory() + "/.timecollectionlogger/widget_data.json"
     private let bufferPath = NSHomeDirectory() + "/.timecollectionlogger/buffer_dump.json"
     private var timer: Timer?
 
+    private let pythonPath = NSHomeDirectory() + "/0_MyFolders/0_Projects/TimeCollectionLogger/.venv/bin/python3"
+    private let exportScript = NSHomeDirectory() + "/0_MyFolders/0_Projects/TimeCollectionLogger/widget_export.py"
+
     init() {
         load()
         timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-            self?.load()
+            if self?.weekOffset == 0 {
+                self?.load()
+            }
         }
     }
 
@@ -65,23 +71,49 @@ class DataLoader: ObservableObject {
         var updated = ""
         var weekStart = ""
 
-        // 1. 读 Notion 数据
         if let d = _loadWidgetData() {
             entries = d.entries
             updated = d.updated
             weekStart = d.weekStart
         }
 
-        // 2. 如果 weekStart 为空（Notion 未同步），用当前周一
         if weekStart.isEmpty {
-            let cal = Calendar.current
-            let today = Date()
-            let monday = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today))!
-            let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
-            weekStart = fmt.string(from: monday)
+            weekStart = _currentMonday()
         }
 
         data = WidgetData(updated: updated, weekStart: weekStart, entries: entries)
+    }
+
+    func navigateWeek(_ offset: Int) {
+        weekOffset = offset
+        let targetMonday = _mondayForOffset(offset)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: pythonPath)
+        process.arguments = [exportScript, "--monday", targetMonday]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+            load()
+        } catch {
+            self.error = "无法加载历史数据"
+        }
+    }
+
+    private func _currentMonday() -> String {
+        let cal = Calendar.current
+        let today = Date()
+        let monday = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today))!
+        let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
+        return fmt.string(from: monday)
+    }
+
+    private func _mondayForOffset(_ offset: Int) -> String {
+        let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
+        guard let baseMonday = fmt.date(from: _currentMonday()) else { return _currentMonday() }
+        let target = Calendar.current.date(byAdding: .day, value: offset * 7, to: baseMonday)!
+        return fmt.string(from: target)
     }
 
     private func _loadWidgetData() -> WidgetData? {

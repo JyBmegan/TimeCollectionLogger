@@ -9,7 +9,17 @@ struct TimeWidgetApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TimelineView(data: loader.data)
+            TimelineView(
+                data: loader.data,
+                weekOffset: loader.weekOffset,
+                onPreviousWeek: { loader.navigateWeek(loader.weekOffset - 1) },
+                onNextWeek: {
+                    if loader.weekOffset < 0 {
+                        loader.navigateWeek(loader.weekOffset + 1)
+                    }
+                },
+                onResetToCurrentWeek: { loader.navigateWeek(0) }
+            )
                 .frame(minWidth: 120, minHeight: 400)
         }
         .windowStyle(.hiddenTitleBar)
