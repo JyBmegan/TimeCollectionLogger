@@ -327,7 +327,7 @@ def fetch_and_cut_events(start_iso, end_iso):
                     total_overlap += (overlap_ed - overlap_st).total_seconds()
             actual_duration = w['duration'] - total_overlap
 
-            if actual_duration > 5:
+            if actual_duration > 10:
                 w['duration'] = actual_duration
                 # 为浏览器窗口补上 URL（扫描窗口跨度的每分钟槽位）
                 app = w['data'].get('app', '')
@@ -367,10 +367,10 @@ LONG_SESSION_THRESHOLD = 3600  # 持续 1h+ → 立刻推送
 MAX_BUFFER_SIZE = 30           # 缓冲区上限
 
 CATEGORY_MIN_DURATION = {
-    "Research": 3, "Work": 3,
-    "Entertainment": 3, "Offline": 2,
+    "Research": 5, "Work": 5,
+    "Entertainment": 5, "Offline": 5,
 }
-CATEGORY_MIN_DURATION_DEFAULT = 3
+CATEGORY_MIN_DURATION_DEFAULT = 5
 
 def _push_session(sess):
     return push_to_notion(
@@ -423,12 +423,21 @@ def _drain_buffer(buffer, now, force=False, rules=None):
         for sess in buffer:
             ctx_key = sess.get('context_key', '')
             if ctx_key and ctx_key in rules:
-                sess['category'], sess['project'] = rules[ctx_key]
+                new_cat, new_proj = rules[ctx_key]
+                # 如果规则里还是 Pending/Uncategorized → 不采用，保留原分类
+                if "Uncategorized" in (new_cat, new_proj) or new_proj == "Pending" or new_cat == "IGNORE" or new_proj == "IGNORE":
+                    continue
+                sess['category'], sess['project'] = new_cat, new_proj
                 sess['key'] = f"{sess['name']}|{sess['category']}|{sess['project']}"
 
     remaining = []
     to_push = []
     for sess in buffer:
+        # 安全阀：绝对不推送 Pending/Uncategorized/IGNORE 的 session
+        cat, proj = sess.get('category', ''), sess.get('project', '')
+        if "Uncategorized" in (cat, proj) or proj == "Pending" or cat == "IGNORE" or proj == "IGNORE":
+            continue  # 直接丢弃，不再放回缓冲区
+
         inactive_sec = (now - sess['last_active']).total_seconds()
         total_sec = (now - sess['start']).total_seconds()
         if force or inactive_sec > STABILITY_TIMEOUT or total_sec > LONG_SESSION_THRESHOLD:
@@ -451,7 +460,7 @@ def _drain_buffer(buffer, now, force=False, rules=None):
 
     for sess in merged:
         mins = int(sess['duration'] // 60)
-        min_dur = CATEGORY_MIN_DURATION.get(sess['category'], CATEGORY_MIN_DURATION_DEFAULT)
+        min_dur = CATEGORY_MIN_DURATION.get(sess.get('category', ''), CATEGORY_MIN_DURATION_DEFAULT)
         inactive_sec = (now - sess['last_active']).total_seconds()
         if mins >= min_dur:
             _push_session(sess)
