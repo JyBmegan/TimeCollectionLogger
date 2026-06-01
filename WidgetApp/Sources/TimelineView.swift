@@ -139,9 +139,13 @@ struct TimelineView: View {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         var result: [String: [TimeEntry]] = [:]
+        let cal = Calendar.current
         for e in entries {
             guard let d = iso.date(from: e.start) else { continue }
-            result[dayFmt.string(from: d), default: []].append(e)
+            // 凌晨 4 点之前的活动归属前一天（应对熬夜场景）
+            let hour = cal.component(.hour, from: d)
+            let adjusted = hour < 4 ? cal.date(byAdding: .day, value: -1, to: d)! : d
+            result[dayFmt.string(from: adjusted), default: []].append(e)
         }
         return result
     }

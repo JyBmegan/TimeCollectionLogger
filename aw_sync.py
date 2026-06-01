@@ -32,7 +32,7 @@ def _sync_rules_to_icloud():
         import shutil
         shutil.copy2(RULES_FILE, ICLOUD_RULES)
     except: pass
-IGNORE_LIST = ["System Settings", "Finder", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA", "TimeWidget"]
+IGNORE_LIST = ["System Settings", "Finder", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA", "TimeWidget", "Steam Helper"]
 
 CONTAINER_APPS = {
     "browsers": ["Google Chrome", "Safari", "Arc", "Edge"],
@@ -173,6 +173,11 @@ def ask_classification_dialog(context_name, rules):
         return "TIMEOUT"
     return result
 
+def _looks_like_file(name):
+    """扩展名判定：含 '.' 且不在开头（排除 .git .claude 等隐藏目录）"""
+    return '.' in name and not name.startswith('.')
+
+
 def parse_vscode_project(title):
     # 去掉脏文件标记 ● 和 SSH/Workspace 噪音
     title = re.sub(r'^[●◉○]\s*', '', title)
@@ -189,16 +194,15 @@ def parse_vscode_project(title):
     # workspace 是最后一段（文件夹/项目根目录名）
     workspace = clean_parts[-1]
 
-    # 剩余部分是文件名/文件夹名（第一段 → 最后一段之前）
+    # 剩余部分是文件名/文件夹名（从 workspace 往前）
     sub_parts = clean_parts[:-1]
 
-    # 如果有子文件夹，取最靠近 workspace 的那一级
-    if sub_parts:
-        folder = sub_parts[-1]
-        if '.' in folder and len(sub_parts) >= 2:
-            folder = sub_parts[-2]
-        return f"{workspace} / {folder}"
+    # 从后往前找第一个不是文件的层级（目录名），跳过所有文件名
+    for part in reversed(sub_parts):
+        if not _looks_like_file(part):
+            return f"{workspace} / {part}"
 
+    # 全是文件 → 只用 workspace 级别
     return workspace
 
 def parse_office_document(title, app):
@@ -425,7 +429,7 @@ def _drain_buffer(buffer, now, force=False, rules=None):
             if ctx_key and ctx_key in rules:
                 new_cat, new_proj = rules[ctx_key]
                 # 如果规则里还是 Pending/Uncategorized → 不采用，保留原分类
-                if "Uncategorized" in (new_cat, new_proj) or new_proj == "Pending" or new_cat == "IGNORE" or new_proj == "IGNORE":
+                if "Uncategorized" in (new_cat, new_proj) or "Pending" in (new_cat, new_proj) or "IGNORE" in (new_cat, new_proj):
                     continue
                 sess['category'], sess['project'] = new_cat, new_proj
                 sess['key'] = f"{sess['name']}|{sess['category']}|{sess['project']}"
@@ -435,7 +439,7 @@ def _drain_buffer(buffer, now, force=False, rules=None):
     for sess in buffer:
         # 安全阀：绝对不推送 Pending/Uncategorized/IGNORE 的 session
         cat, proj = sess.get('category', ''), sess.get('project', '')
-        if "Uncategorized" in (cat, proj) or proj == "Pending" or cat == "IGNORE" or proj == "IGNORE":
+        if "Uncategorized" in (cat, proj) or "Pending" in (cat, proj) or "IGNORE" in (cat, proj):
             continue  # 直接丢弃，不再放回缓冲区
 
         inactive_sec = (now - sess['last_active']).total_seconds()

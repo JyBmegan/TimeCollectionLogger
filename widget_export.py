@@ -16,9 +16,19 @@ CACHE_FILE = os.path.join(CACHE_DIR, "widget_data.json")
 
 
 def get_monday(dt=None):
-    dt = dt or datetime.now(timezone.utc)
-    return (dt - timedelta(days=dt.weekday())).replace(
+    """返回本地周一的 UTC 起始时间点，Notion API 查询用"""
+    if dt is None:
+        local = datetime.now(timezone.utc).astimezone()
+    elif dt.tzinfo is None:
+        # 命令行传进来的 naive 日期 → 按本地时区理解
+        tz = datetime.now(timezone.utc).astimezone().tzinfo
+        local = dt.replace(tzinfo=tz)
+    else:
+        local = dt.astimezone()
+    # 退回该工作日周一 00:00（本地），转 UTC
+    local_monday = (local - timedelta(days=local.weekday())).replace(
         hour=0, minute=0, second=0, microsecond=0)
+    return local_monday.astimezone(timezone.utc)
 
 
 def _notion_post(url, body, max_retries=3):
@@ -121,25 +131,26 @@ def _get_date(prop):
 def main():
     os.makedirs(CACHE_DIR, exist_ok=True)
 
-    # 支持命令行指定周一日期：widget_export.py --monday 2026-05-18
+    # 支持命令行指定周一日期：widget_export.py --monday 2026-06-01
     monday = None
     args = sys.argv[1:]
     if len(args) >= 2 and args[0] == "--monday":
         try:
-            monday = datetime.fromisoformat(args[1]).replace(tzinfo=timezone.utc)
+            naive = datetime.fromisoformat(args[1])
+            monday = get_monday(dt=naive)
         except ValueError:
             print(f"无效日期: {args[1]}")
             sys.exit(1)
-
-    label = monday.strftime("%Y-%m-%d") if monday else "本周"
-    print(f"查询 Notion {label} 数据...")
-    entries = fetch_week_entries(monday=monday)
-    if monday is None:
+    else:
         monday = get_monday()
+
+    week_label = monday.astimezone().strftime("%Y-%m-%d")
+    print(f"查询 Notion {week_label} 数据...")
+    entries = fetch_week_entries(monday=monday)
 
     output = {
         "updated": datetime.now(timezone.utc).isoformat(),
-        "weekStart": monday.strftime("%Y-%m-%d"),
+        "weekStart": week_label,
         "entries": entries,
     }
 

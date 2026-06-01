@@ -487,16 +487,20 @@
         "Research",
         "FaceModel"
     ],
+    "web: jeffcohn.net": [
+        "Web",
+        "jeffcohn.net"
+    ],
+    "vscode: cuihunew / watch_training.sh": [
+        "Research",
+        "FaceModel"
+    ],
     "vscode: cuihunew / preview research_plan_final.md": [
         "Research",
         "FaceModel"
     ],
-    "vscode: timecollectionlogger / settings.local.json": [
-        "Exploration",
-        "TimeLogger"
-    ],
-    "vscode: timecollectionlogger / tcl.sh": [
-        "Exploration",
-        "TimeLogger"
+    "vscode: cuihunew / preview work_log.md": [
+        "Research",
+        "FaceModel"
     ]
 }
