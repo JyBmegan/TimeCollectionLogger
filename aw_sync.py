@@ -32,7 +32,7 @@ def _sync_rules_to_icloud():
         import shutil
         shutil.copy2(RULES_FILE, ICLOUD_RULES)
     except: pass
-IGNORE_LIST = ["System Settings", "Finder", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA", "TimeWidget", "Steam Helper"]
+IGNORE_LIST = ["System Settings", "Finder", "访达", "loginwindow", "Window Server", "Control Center", "Activity Monitor", "Spotlight", "NotificationCenter", "Terminal", "iTerm2", "IINA", "TimeWidget", "Steam Helper", "系统事件", "日历", "备忘录", "Lark Helper", "飞书", "coreautha"]
 
 CONTAINER_APPS = {
     "browsers": ["Google Chrome", "Safari", "Arc", "Edge"],
@@ -173,10 +173,12 @@ def ask_classification_dialog(context_name, rules):
         return "TIMEOUT"
     return result
 
+# VSCode 内部页面名称（不是真实文件/文件夹，忽略）
+_VSCODE_UI_NAMES = {"welcome", "visual studio code", "code", "getting started", "walkthrough", "extensions", "settings", "untitled"}
+
 def _looks_like_file(name):
     """扩展名判定：含 '.' 且不在开头（排除 .git .claude 等隐藏目录）"""
     return '.' in name and not name.startswith('.')
-
 
 def parse_vscode_project(title):
     # 去掉脏文件标记 ● 和 SSH/Workspace 噪音
@@ -185,17 +187,28 @@ def parse_vscode_project(title):
     title = re.sub(r'\s*\(Workspace\)', '', title)
 
     parts = re.split(r'\s+[—\-]\s+', title)
-    # 去掉末尾的 "Visual Studio Code"
-    clean_parts = [p.strip() for p in parts if p.strip() and 'Visual Studio Code' not in p]
+    # 去掉末尾的 "Visual Studio Code" 和 VSCode 内部页面名
+    clean_parts = []
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        if 'visual studio code' in p.lower():
+            continue
+        if p.lower() in _VSCODE_UI_NAMES:
+            continue
+        clean_parts.append(p)
 
     if not clean_parts:
-        return "Unnamed"
+        return None  # 全是 VSCode 内部页面 → 忽略
 
     # workspace 是最后一段（文件夹/项目根目录名）
     workspace = clean_parts[-1]
 
-    # 剩余部分是文件名/文件夹名（从 workspace 往前）
+    # 如果只剩 workspace（没有前面的文件/子目录层级）→ 直接用
     sub_parts = clean_parts[:-1]
+    if not sub_parts:
+        return workspace
 
     # 从后往前找第一个不是文件的层级（目录名），跳过所有文件名
     for part in reversed(sub_parts):
@@ -242,7 +255,11 @@ def extract_context_identifier(app, title, url):
             return f"Web: {main_domain}"
         except: return None
     elif app in CONTAINER_APPS["editors"]:
-        if app == "Code": return f"VSCode: {parse_vscode_project(title)}"
+        if app == "Code":
+            proj = parse_vscode_project(title)
+            if proj is None:
+                return None  # VSCode 内部页面 → 不记录
+            return f"VSCode: {proj}"
         return f"{app}: {title[:20]}"
     elif app in CONTAINER_APPS["notes"] or app in CONTAINER_APPS["office"]:
         clean_title = parse_office_document(title, app)
@@ -548,7 +565,9 @@ def daemon_loop():
                     # AI 对话平台 → 两步分类弹窗
                     res = ask_classification_dialog("AI: " + context_name, rules)
                     if res == "TIMEOUT" or res is None:
-                        continue  # 未分类 = 不记录、不学规则
+                        rules[context_name.lower()] = ["IGNORE", "IGNORE"]
+                        save_rules(rules)
+                        continue
                     elif "/IGNORE" in res:
                         l1_cat, l2_proj = "IGNORE", "IGNORE"
                     else:
@@ -560,7 +579,9 @@ def daemon_loop():
                 else:
                     res = ask_classification_dialog(context_name, rules)
                     if res == "TIMEOUT" or res is None:
-                        continue  # 未分类 = 不记录、不学规则
+                        rules[context_name.lower()] = ["IGNORE", "IGNORE"]
+                        save_rules(rules)
+                        continue
                     elif "/IGNORE" in res:
                         parts = res.split("/", 1)
                         l1_cat = parts[0].strip()

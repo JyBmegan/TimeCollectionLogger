@@ -395,18 +395,6 @@
         "Research",
         "BrainMU"
     ],
-    "vscode: cuihunew": [
-        "Research",
-        "BrainMU"
-    ],
-    "vscode: workspace — cuihunew": [
-        "Research",
-        "BrainMU"
-    ],
-    "vscode: cuihunew (workspace) [ssh: jiayu-cuihu-new]": [
-        "Research",
-        "BrainMU"
-    ],
     "web: huggingface.co": [
         "Web",
         "huggingface.co"
@@ -491,6 +479,26 @@
         "Web",
         "jeffcohn.net"
     ],
+    "sultan's game": [
+        "Entertainment",
+        "Sultan's Game"
+    ],
+    "web: edu.hk": [
+        "Web",
+        "edu.hk"
+    ],
+    "web: linkedin.com": [
+        "Web",
+        "linkedin.com"
+    ],
+    "vscode: cuihunew": [
+        "Research",
+        "BrainMU"
+    ],
+    "vscode: cuihunew / welcome": [
+        "Research",
+        "BrainMU"
+    ],
     "vscode: cuihunew / watch_training.sh": [
         "Research",
         "FaceModel"
@@ -502,5 +510,49 @@
     "vscode: cuihunew / preview work_log.md": [
         "Research",
         "FaceModel"
+    ],
+    "vscode: cuihunew (workspace) [ssh: jiayu-cuihu-new]": [
+        "Research",
+        "BrainMU"
+    ],
+    "microsoft word: 附件2： 江苏省心理学会2025年度本科生研究基金项目结题申请书  -  兼容性": [
+        "Trivia",
+        "Triviaaaa"
+    ],
+    "microsoft word: 附件4：报销具体说明  -  兼容性模式": [
+        "Trivia",
+        "Triviaaaa"
+    ],
+    "vscode: megan / .zshrc": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft excel: analysis_results": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "vscode: readme.md": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "microsoft word: 文档2": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "matlab": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "microsoft word: 文档1": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "microsoft word: 匿名正文ver2_0603": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "deepseek: modeling spatiotemporal neural frames fo": [
+        "IGNORE",
+        "IGNORE"
     ]
 }
