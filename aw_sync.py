@@ -10,7 +10,7 @@ from config import get_notion_api_key, get_notion_database_id
 
 NOTION_API_KEY = get_notion_api_key()
 DATABASE_ID = get_notion_database_id()
-AW_API_URL = "http://localhost:5600/api/0"
+AW_API_URL = "http://127.0.0.1:5600/api/0"
 
 RULES_FILE = "rules.json"
 STATE_FILE = "state.json"
@@ -516,13 +516,19 @@ def daemon_loop():
             for event in afk_events:
                 mins = int(event['duration'] // 60)
                 if mins >= 15:
+                    # 如果距上次扫描 > 30 分钟，说明电脑刚从长时间睡眠醒过来，
+                    # 这种 AFK 是正常的睡眠时间，不弹窗、不记录
+                    gap_since_last = (now - last_check).total_seconds()
+                    if gap_since_last > 1800:
+                        print(f"跳过 AFK 弹窗（睡眠间隔 {gap_since_last/60:.0f} 分钟）")
+                        continue
                     session_buffer = _drain_buffer(session_buffer, now, force=True, rules=rules)
                     prompt = f"欢迎回来！\n系统检测到你离开了 {mins} 分钟。\n这段时间你在做什么？"
                     res = ask_mac_dialog("离线时间捕捉", prompt)
                     if res == "IGNORE":
                         continue
                     elif res == "TIMEOUT" or not res:
-                        cat, proj = "Offline", "Uncategorized"
+                        continue  # 没人回应 → 忽略，不记录虚假的 Uncategorized
                     else:
                         cat, proj = res.split("/", 1) if "/" in res else ("Offline", res)
 

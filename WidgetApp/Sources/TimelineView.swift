@@ -19,6 +19,7 @@ struct TimelineView: View {
     let onPreviousWeek: () -> Void
     let onNextWeek: () -> Void
     let onResetToCurrentWeek: () -> Void
+    @State private var showNames = true
 
     var body: some View {
         if let data = data {
@@ -50,6 +51,16 @@ struct TimelineView: View {
                     .disabled(weekOffset == 0)
 
                     Spacer()
+
+                    Button(action: { showNames.toggle() }) {
+                        Image(systemName: showNames ? "eye" : "eye.slash")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 16, height: 16)
+                    .contentShape(Rectangle())
+                    .help(showNames ? "Hide project names" : "Show project names")
 
                     Button(action: onResetToCurrentWeek) {
                         Text("Today")
@@ -87,7 +98,7 @@ struct TimelineView: View {
 
                         ForEach(days, id: \.self) { day in
                             DayColumn(date: day, entries: byDay[day] ?? [],
-                                      colW: colW, hourHeight: hourH)
+                                      colW: colW, hourHeight: hourH, showNames: showNames)
                         }
                     }
                     .frame(height: CGFloat(totalHours) * hourH + 32)
@@ -200,6 +211,7 @@ struct DayColumn: View {
     let entries: [TimeEntry]
     let colW: CGFloat
     let hourHeight: CGFloat
+    let showNames: Bool
 
     private var isToday: Bool {
         return date == dayFmt.string(from: Date())
@@ -227,7 +239,8 @@ struct DayColumn: View {
                                       groupCount: sl.entries.count,
                                       groupIndex: j,
                                       colW: colW, hourHeight: hourHeight,
-                                      sliceStart: sl.start, sliceEnd: sl.end)
+                                      sliceStart: sl.start, sliceEnd: sl.end,
+                                      showNames: showNames)
                     }
                 }
             }
@@ -287,6 +300,7 @@ struct TimeBlockView: View {
     let hourHeight: CGFloat
     let sliceStart: String
     let sliceEnd: String
+    let showNames: Bool
 
     var body: some View {
         let (y, h) = sliceLayout()
@@ -297,17 +311,24 @@ struct TimeBlockView: View {
         Button(action: {
             NSWorkspace.shared.open(URL(string: "https://www.notion.so/36679f2dabbc8034b450e66d5596cc22")!)
         }) {
-            Text(entry.project)
-                .font(.system(size: min(blockFontSize, colW / 9), weight: .semibold))
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .minimumScaleFactor(0.6)
-                .foregroundColor(.white)
-                .padding(.horizontal, 3)
-                .padding(.vertical, 2)
-                .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
-                .background(blockColor(entry.category))
-                .cornerRadius(3)
+            if showNames {
+                Text(entry.project)
+                    .font(.system(size: min(blockFontSize, colW / 9), weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.6)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 3)
+                    .padding(.vertical, 2)
+                    .frame(width: max(subW - 1, 24), height: blockH, alignment: .topLeading)
+                    .background(blockColor(entry.category))
+                    .cornerRadius(3)
+            } else {
+                Color.clear
+                    .frame(width: max(subW - 1, 24), height: blockH)
+                    .background(blockColor(entry.category))
+                    .cornerRadius(3)
+            }
         }
         .buttonStyle(.plain)
         .offset(x: xOff, y: y)

@@ -240,8 +240,8 @@
         "Dangyuan"
     ],
     "microsoft word: 文档3": [
-        "Trivia",
-        "Dangyuan"
+        "Research",
+        "SE-AlexNet"
     ],
     "steam helper": [
         "Entertainment",
@@ -304,8 +304,8 @@
         "AI Chat"
     ],
     "web: neuromatch.io": [
-        "Web",
-        "neuromatch.io"
+        "Study",
+        "NeuroMatch"
     ],
     "gemini: 论文修改与审稿意见回应": [
         "Research",
@@ -469,7 +469,7 @@
     ],
     "web: zenodo.org": [
         "Web",
-        "zenodo.org"
+        ""
     ],
     "deepseek: veatic: video-based emotion and affect t": [
         "Research",
@@ -552,6 +552,242 @@
         "SE-AlexNet"
     ],
     "deepseek: modeling spatiotemporal neural frames fo": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "qqminiapp": [
+        "Entertainment",
+        "QQ"
+    ],
+    "microsoft word: 包家瑜_中文简历": [
+        "Trivia",
+        "Triviaaaa"
+    ],
+    "web: rclone.org": [
+        "Web",
+        "rclone.org"
+    ],
+    "web: reddit.com": [
+        "Web",
+        "reddit.com"
+    ],
+    "gemini: rclone 安装卡住的解决办法": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: 近期的下载记录": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: reddit - the heart of the internet": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: ‍‌‬‍⁤‌‬‌‌⁢⁣⁡‌​‍‬​​⁡⁤⁡​‍⁤⁡‬⁢​﻿⁢﻿‌​‌⁤⁤‬⁢‍‍": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: notifications | linkedin": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: sign in - google accounts": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "web: backblaze.com": [
+        "Web",
+        "backblaze.com"
+    ],
+    "vscode: cuihunew / _conda": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "steam": [
+        "Entertainment",
+        "Steam"
+    ],
+    "microsoft word: 补充数据": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "vscode: gradcam-roi": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "oxygen not included": [
+        "Entertainment",
+        "Oxygen Not Included"
+    ],
+    "microsoft word: 信息整理-前50条": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "app store": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "web: baidu.com": [
+        "Web",
+        "baidu.com"
+    ],
+    "web: mixlink.com": [
+        "Web",
+        "mixlink.com"
+    ],
+    "microsoft powerpoint: au_counterfactual_demo": [
+        "Research",
+        "FaceModel"
+    ],
+    "microsoft powerpoint: presentationp1": [
+        "Research",
+        "RibFrac"
+    ],
+    "microsoft powerpoint: presentation": [
+        "Research",
+        "RibFrac"
+    ],
+    "microsoft word: 位置": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft word: 群体面孔_江苏省心理学会大学生创新创业暨科研基金项目申请表  -  兼容性模式": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "web: grand-challenge.org": [
+        "Web",
+        "grand-challenge.org"
+    ],
+    "microsoft powerpoint: 字体": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft powerpoint: 0610presentation": [
+        "Research",
+        "RibFrac"
+    ],
+    "microsoft powerpoint: powerpoint 幻灯片放映 - [0610presentation]": [
+        "Research",
+        "RibFrac"
+    ],
+    "microsoft powerpoint: facialexpressiondynamics_slides_v2": [
+        "Research",
+        "FaceModel"
+    ],
+    "vscode: cuihunew / 2014": [
+        "Research",
+        "FaceModel"
+    ],
+    "vscode: cuihunew / activate": [
+        "Research",
+        "BrainMU"
+    ],
+    "web: figshare.com": [
+        "Web",
+        "figshare.com"
+    ],
+    "microsoft word: 未命名": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft word: draft_结项材料": [
+        "Trivia",
+        "JPsyGrants"
+    ],
+    "web: manuscriptcloud.com": [
+        "Web",
+        "manuscriptcloud.com"
+    ],
+    "microsoft word: 匿名正文修改版": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "vscode: megan / config": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: 九鼎平台": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: 面孔识别ai优化结项报告": [
+        "Trivia",
+        "JPsyGrants"
+    ],
+    "microsoft word: 段落": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: cuihunew / ks3util-linux-amd64": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: cuihunew / bash": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "百度网盘": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "professorsimulator": [
+        "Entertainment",
+        "ProfSimulator"
+    ],
+    "vscode: results.md": [
+        "Research",
+        "FaceModel"
+    ],
+    "vscode: 0_notiopti": [
+        "Exploration",
+        "NotiOpti"
+    ],
+    "系统信息": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "控制台": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "gemini: deepseek platform": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "web: openneuro.org": [
+        "Web",
+        "openneuro.org"
+    ],
+    "vscode: sync_parallel.sh": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "web: contributor-covenant.org": [
+        "Web",
+        "contributor-covenant.org"
+    ],
+    "parallels system monitor": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: megan": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft word: 打开新的和最近使用的文件": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "microsoft word: 2026年6月18日": [
+        "Wondering",
+        "Diary"
+    ],
+    "todesk": [
+        "IGNORE",
+        "IGNORE"
+    ],
+    "vscode: 服务器安装claude_code_deepseek指南.md": [
         "IGNORE",
         "IGNORE"
     ]
