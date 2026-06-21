@@ -790,5 +790,25 @@
     "vscode: 服务器安装claude_code_deepseek指南.md": [
         "IGNORE",
         "IGNORE"
+    ],
+    "web: localhost:8080": [
+        "Web",
+        "localhost:8080"
+    ],
+    "web: clustrmaps.com": [
+        "Web",
+        "clustrmaps.com"
+    ],
+    "vscode: 0_projects": [
+        "Research",
+        "SE-AlexNet"
+    ],
+    "microsoft word: 1_修订版": [
+        "Trivia",
+        "JPsyGrants"
+    ],
+    "microsoft word: 字体": [
+        "IGNORE",
+        "IGNORE"
     ]
 }
