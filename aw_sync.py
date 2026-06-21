@@ -10,7 +10,7 @@ from config import get_notion_api_key, get_notion_database_id
 
 NOTION_API_KEY = get_notion_api_key()
 DATABASE_ID = get_notion_database_id()
-AW_API_URL = "http://127.0.0.1:5600/api/0"
+AW_API_URL = "http://localhost:5600/api/0"
 
 RULES_FILE = "rules.json"
 STATE_FILE = "state.json"
@@ -305,17 +305,22 @@ def fetch_and_cut_events(start_iso, end_iso):
         afk_bucket = next((b for b in buckets if "aw-watcher-afk" in b), None)
         web_bucket = next((b for b in buckets if "aw-watcher-web" in b), None)
 
-        if not win_bucket or not afk_bucket: return [], [], {}
+        if not win_bucket: return [], [], {}
+        if not afk_bucket:
+            print("  -> AFK bucket 缺失，跳过离席检测")
 
-        params = {"start": start_iso, "end": end_iso}
-        win_events = requests.get(f"{AW_API_URL}/buckets/{win_bucket}/events", params=params).json()
-        afk_events = requests.get(f"{AW_API_URL}/buckets/{afk_bucket}/events", params=params).json()
+        # requests 的 params 不会对 + 编码，导致 +00:00 变成空格，AW 解析失败
+        start_enc = start_iso.replace("+", "%2B")
+        end_enc = end_iso.replace("+", "%2B")
+        qs = f"?start={start_enc}&end={end_enc}"
+        win_events = requests.get(f"{AW_API_URL}/buckets/{win_bucket}/events{qs}").json()
+        afk_events = requests.get(f"{AW_API_URL}/buckets/{afk_bucket}/events{qs}").json() if afk_bucket else []
 
         # 拉取网页浏览历史 (Chrome watcher-web)
         web_url_map = {}  # time_slot -> url
         if web_bucket:
             try:
-                web_events = requests.get(f"{AW_API_URL}/buckets/{web_bucket}/events", params=params).json()
+                web_events = requests.get(f"{AW_API_URL}/buckets/{web_bucket}/events{qs}").json()
                 for we in web_events:
                     ts = datetime.fromisoformat(we['timestamp'].replace('Z', '+00:00'))
                     url = we['data'].get('url', '')
